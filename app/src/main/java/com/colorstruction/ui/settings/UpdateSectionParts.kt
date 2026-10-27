@@ -18,6 +18,15 @@ import com.colorstruction.R
 import com.colorstruction.update.UpdateError
 import com.colorstruction.update.UpdateState
 
+/** Drops the Markdown markers GitHub release notes use (headings, bold, code) for plain display. */
+internal fun stripMarkdown(text: String): String =
+    text.lines().joinToString("\n") { line ->
+        line.replace(Regex("^#{1,6}\\s+"), "")
+            .replace(Regex("^\\s*[-*]\\s+"), "• ")
+            .replace("**", "")
+            .replace("`", "")
+    }
+
 /** Release notes, collapsed to six lines until the user expands them. */
 @Composable
 internal fun ReleaseNotes(notes: String, modifier: Modifier = Modifier) {
@@ -29,7 +38,7 @@ internal fun ReleaseNotes(notes: String, modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.titleSmall,
         )
         Text(
-            text = notes,
+            text = stripMarkdown(notes),
             style = MaterialTheme.typography.bodySmall,
             maxLines = if (expanded) Int.MAX_VALUE else 6,
             overflow = TextOverflow.Ellipsis,

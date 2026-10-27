@@ -1,5 +1,6 @@
 package com.colorstruction.ui.mix
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.colorstruction.R
 import com.colorstruction.color.Rgb
+import com.colorstruction.ui.eyedropper.ImageSourceMenu
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /** SavedStateHandle key through which the picker returns the confirmed color. */
@@ -45,11 +47,13 @@ const val PICKED_COLOR_KEY = "picked_color"
  * Mixing overview: target color, display controls and the recipe cards.
  *
  * @param onPickColor invoked with the current target color when the pick button is pressed
+ * @param onPickFromImage invoked with a gallery/camera image to open the eyedropper on
  * @param savedStateHandle handle of this destination, used to receive the picked color
  */
 @Composable
 fun MixScreen(
     onPickColor: (Rgb) -> Unit,
+    onPickFromImage: (Uri) -> Unit,
     savedStateHandle: SavedStateHandle?,
     modifier: Modifier = Modifier,
     viewModel: MixViewModel = viewModel(factory = MixViewModel.Factory),
@@ -74,7 +78,7 @@ fun MixScreen(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item { TargetSection(target, onPickColor) }
+        item { TargetSection(target, onPickColor, onPickFromImage) }
         item {
             MixControls(
                 ratioFormat = uiState.ratioFormat,
@@ -101,9 +105,13 @@ fun MixScreen(
     }
 }
 
-/** Target swatch next to its hex value and the pick button. */
+/** Target swatch next to its hex value and the pick buttons. */
 @Composable
-private fun TargetSection(target: Rgb, onPickColor: (Rgb) -> Unit) {
+private fun TargetSection(
+    target: Rgb,
+    onPickColor: (Rgb) -> Unit,
+    onPickFromImage: (Uri) -> Unit,
+) {
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
         Box(
             Modifier
@@ -119,6 +127,7 @@ private fun TargetSection(target: Rgb, onPickColor: (Rgb) -> Unit) {
                 Icon(imageVector = Icons.Filled.Colorize, contentDescription = null)
                 Text(stringResource(R.string.pick_color), Modifier.padding(start = 8.dp))
             }
+            ImageSourceMenu(onPickFromImage = onPickFromImage)
         }
     }
 }

@@ -8,6 +8,9 @@ sealed interface InstallResult {
     /** The new version was installed. */
     data object Installed : InstallResult
 
-    /** Aborted (the user cancelled), blocked or failed; [message] is the system's explanation. */
+    /** The user cancelled the system install dialog; not an error. */
+    data object Cancelled : InstallResult
+
+    /** Blocked or failed; [message] is the system's explanation. */
     data class Failed(val message: String) : InstallResult
 }

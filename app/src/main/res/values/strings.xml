@@ -61,6 +61,10 @@
     <string name="color_blue">Blue</string>
     <string name="color_wheel_description">Hue ring and saturation/value square</string>
     <string name="pick_color">Pick color</string>
+    <string name="from_image">From image</string>
+    <string name="from_gallery">From gallery</string>
+    <string name="take_photo">Take photo</string>
+    <string name="no_camera_app">No camera app found</string>
     <string name="target_color">Target color</string>
     <string name="target">Target</string>
     <string name="result">Result</string>

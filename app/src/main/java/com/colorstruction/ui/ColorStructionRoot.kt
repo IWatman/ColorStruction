@@ -1,5 +1,6 @@
 package com.colorstruction.ui
 
+import android.net.Uri
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Palette
@@ -13,6 +14,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -31,6 +33,7 @@ import androidx.navigation.navArgument
 import com.colorstruction.ColorStructionApp
 import com.colorstruction.R
 import com.colorstruction.color.Rgb
+import com.colorstruction.ui.eyedropper.EyedropperScreen
 import com.colorstruction.ui.mix.MixScreen
 import com.colorstruction.ui.mix.PICKED_COLOR_KEY
 import com.colorstruction.ui.paints.PaintEditorScreen
@@ -61,7 +64,11 @@ private const val PAINT_EDITOR_PATTERN =
     "$PAINT_EDITOR_ROUTE?$PALETTE_ID_ARG={$PALETTE_ID_ARG}&$PAINT_ID_ARG={$PAINT_ID_ARG}"
 private const val NEW_PAINT_ID = -1L
 
-/** Root navigation graph: three bottom tabs plus the color picker and the paint editor. */
+private const val EYEDROPPER_ROUTE = "eyedropper"
+private const val EYEDROPPER_URI_ARG = "uri"
+private const val EYEDROPPER_PATTERN = "$EYEDROPPER_ROUTE?$EYEDROPPER_URI_ARG={$EYEDROPPER_URI_ARG}"
+
+/** Root navigation graph: three bottom tabs plus the color picker, eyedropper and paint editor. */
 @Composable
 fun ColorStructionRoot() {
     val navController = rememberNavController()
@@ -70,7 +77,13 @@ fun ColorStructionRoot() {
     val appContext = LocalContext.current.applicationContext as ColorStructionApp
     val updateState by appContext.container.updateManager.state.collectAsStateWithLifecycle()
     val showBottomBar = currentDestination?.route != PICKER_PATTERN &&
-        currentDestination?.route != PAINT_EDITOR_PATTERN
+        currentDestination?.route != PAINT_EDITOR_PATTERN &&
+        currentDestination?.route != EYEDROPPER_PATTERN
+
+    // Both the picker and the eyedropper return their color through the previous entry.
+    val openEyedropper: (Uri) -> Unit = { uri ->
+        navController.navigate("$EYEDROPPER_ROUTE?$EYEDROPPER_URI_ARG=${Uri.encode(uri.toString())}")
+    }
 
     Scaffold(
         bottomBar = {
@@ -127,6 +140,7 @@ fun ColorStructionRoot() {
                     onPickColor = { rgb ->
                         navController.navigate("$PICKER_ROUTE?$PICKER_COLOR_ARG=${rgb.toArgbInt()}")
                     },
+                    onPickFromImage = openEyedropper,
                     savedStateHandle = entry.savedStateHandle,
                 )
             }
@@ -170,9 +184,37 @@ fun ColorStructionRoot() {
                     onPickColor = { rgb ->
                         navController.navigate("$PICKER_ROUTE?$PICKER_COLOR_ARG=${rgb.toArgbInt()}")
                     },
+                    onPickFromImage = openEyedropper,
                     pickedColor = pickedFlow,
                     onClearPickedColor = { savedStateHandle[PICKED_COLOR_KEY] = null },
                 )
+            }
+            composable(
+                route = EYEDROPPER_PATTERN,
+                arguments = listOf(
+                    navArgument(EYEDROPPER_URI_ARG) {
+                        type = NavType.StringType
+                        nullable = true
+                    },
+                ),
+            ) { entry ->
+                val imageUri = entry.arguments
+                    ?.getString(EYEDROPPER_URI_ARG)
+                    ?.let(Uri::parse)
+                if (imageUri == null) {
+                    LaunchedEffect(Unit) { navController.popBackStack() }
+                } else {
+                    EyedropperScreen(
+                        imageUri = imageUri,
+                        onConfirm = { rgb ->
+                            navController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(PICKED_COLOR_KEY, rgb.toArgbInt())
+                            navController.popBackStack()
+                        },
+                        onCancel = { navController.popBackStack() },
+                    )
+                }
             }
             composable(
                 route = PICKER_PATTERN,

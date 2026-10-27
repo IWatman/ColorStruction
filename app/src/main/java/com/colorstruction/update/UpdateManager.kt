@@ -155,6 +155,13 @@ class UpdateManager(
                 job = null
                 _state.value = UpdateState.Idle
             }
+            InstallResult.Cancelled -> {
+                installingSince = null
+                confirmationShown = false
+                _state.value = _state.value.currentRelease
+                    ?.let { UpdateState.Available(it) }
+                    ?: UpdateState.Idle
+            }
             is InstallResult.Failed -> {
                 installingSince = null
                 confirmationShown = false

@@ -174,9 +174,9 @@ Each stage ends with a build (`./gradlew assembleDebug`) and a test run.
 - [x] Empty states: no paints, nothing close found
 
 ### Stage 7. Eyedropper
-- [ ] Photo Picker (no storage permissions) + camera snapshot via FileProvider
-- [ ] Downsampled decoding, zoom/pan, crosshair, loupe
-- [ ] Area averaging, result → target or paint color
+- [x] Photo Picker (no storage permissions) + camera snapshot via FileProvider
+- [x] Downsampled decoding, zoom/pan, crosshair, loupe
+- [x] Area averaging, result → target or paint color
 
 ### Stage 8. Settings, language, updates
 - [x] Settings screen

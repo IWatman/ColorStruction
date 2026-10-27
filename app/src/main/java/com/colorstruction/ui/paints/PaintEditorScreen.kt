@@ -1,5 +1,6 @@
 package com.colorstruction.ui.paints
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -41,6 +42,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.colorstruction.R
 import com.colorstruction.color.Rgb
+import com.colorstruction.ui.eyedropper.ImageSourceMenu
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.Locale
@@ -54,6 +56,7 @@ private fun formatStrength(value: Double): String = String.format(Locale.ROOT, "
  * @param onBack invoked on the back arrow
  * @param onSaved invoked after the paint has been stored
  * @param onPickColor invoked with the current color when "Change color" is pressed
+ * @param onPickFromImage invoked with a gallery/camera photo of a swatch
  * @param pickedColor color returned by the picker through the saved state handle
  * @param onClearPickedColor called after the picked color has been applied
  */
@@ -63,6 +66,7 @@ fun PaintEditorScreen(
     onBack: () -> Unit,
     onSaved: () -> Unit,
     onPickColor: (Rgb) -> Unit,
+    onPickFromImage: (Uri) -> Unit,
     pickedColor: StateFlow<Int?>? = null,
     onClearPickedColor: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -135,6 +139,7 @@ fun PaintEditorScreen(
             ColorSection(
                 color = state.color,
                 onChangeColor = { onPickColor(state.color) },
+                onPickFromImage = onPickFromImage,
             )
             StrengthSection(
                 value = state.tintingStrength,
@@ -151,9 +156,13 @@ fun PaintEditorScreen(
     }
 }
 
-/** Large color swatch, its HEX value and the button that opens the picker. */
+/** Large color swatch, its HEX value and the buttons that open the picker or the eyedropper. */
 @Composable
-private fun ColorSection(color: Rgb, onChangeColor: () -> Unit) {
+private fun ColorSection(
+    color: Rgb,
+    onChangeColor: () -> Unit,
+    onPickFromImage: (Uri) -> Unit,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -178,6 +187,7 @@ private fun ColorSection(color: Rgb, onChangeColor: () -> Unit) {
             OutlinedButton(onClick = onChangeColor) {
                 Text(stringResource(R.string.change_color))
             }
+            ImageSourceMenu(onPickFromImage = onPickFromImage)
         }
     }
 }

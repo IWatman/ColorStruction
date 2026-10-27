@@ -74,6 +74,15 @@ class UpdateManagerInstallTest {
     }
 
     @Test
+    fun `user cancelling the install dialog returns to available without an error`() = runTest {
+        val manager = build()
+        install(manager)
+        manager.onInstallResult(InstallResult.Cancelled)
+
+        assertEquals(UpdateState.Available(FAKE_RELEASE), manager.state.value)
+    }
+
+    @Test
     fun `dismissed install dialog without callback does not leave installing`() = runTest {
         val manager = build()
         install(manager)

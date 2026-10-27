@@ -27,6 +27,7 @@ class UpdateInstallReceiver : BroadcastReceiver() {
         return when (status) {
             PackageInstaller.STATUS_PENDING_USER_ACTION -> showConfirmation(context, intent)
             PackageInstaller.STATUS_SUCCESS -> InstallResult.Installed
+            PackageInstaller.STATUS_FAILURE_ABORTED -> InstallResult.Cancelled
             else -> InstallResult.Failed(
                 intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
                     ?: describe(status),

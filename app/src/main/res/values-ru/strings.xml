@@ -59,6 +59,10 @@
     <string name="color_blue">Синий</string>
     <string name="color_wheel_description">Кольцо оттенков и квадрат насыщенности и яркости</string>
     <string name="pick_color">Выбрать цвет</string>
+    <string name="from_image">С картинки</string>
+    <string name="from_gallery">Из галереи</string>
+    <string name="take_photo">Сфотографировать</string>
+    <string name="no_camera_app">Не найдено приложение камеры</string>
     <string name="target_color">Целевой цвет</string>
     <string name="target">Цель</string>
     <string name="result">Результат</string>
