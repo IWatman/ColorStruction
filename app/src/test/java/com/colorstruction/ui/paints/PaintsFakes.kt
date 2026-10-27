@@ -35,6 +35,9 @@ internal class FakePaintRepository(
 
     override suspend fun getPalettes(): List<Palette> = palettesState.value
 
+    override suspend fun getPaints(paletteId: Long): List<Paint> =
+        paintsState.value.filter { it.paletteId == paletteId }.sortedBy { it.sortOrder }
+
     override suspend fun createPalette(name: String, type: PaletteType): Long {
         val id = nextPaletteId++
         palettesState.value += Palette(id = id, name = name, type = type, createdAt = id)

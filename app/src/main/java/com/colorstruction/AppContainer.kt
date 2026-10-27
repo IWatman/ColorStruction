@@ -4,6 +4,7 @@ import android.content.Context
 import com.colorstruction.data.ColorStructionDatabase
 import com.colorstruction.data.FavoriteRepository
 import com.colorstruction.data.PaintRepository
+import com.colorstruction.data.PaletteTransfer
 import com.colorstruction.data.RoomFavoriteRepository
 import com.colorstruction.data.RoomPaintRepository
 import com.colorstruction.data.SettingsRepository
@@ -33,6 +34,9 @@ class AppContainer(context: Context) {
 
     /** Palettes and paints. */
     val paintRepository: PaintRepository = RoomPaintRepository(database)
+
+    /** Palette export / import (palette files). */
+    val paletteTransfer: PaletteTransfer = PaletteTransfer(paintRepository)
 
     /** Saved favorite recipes (snapshots, independent of later paint edits). */
     val favoriteRepository: FavoriteRepository = RoomFavoriteRepository(database)

@@ -25,6 +25,9 @@ interface PaintRepository {
     /** One-off read of all palettes, oldest first. */
     suspend fun getPalettes(): List<Palette>
 
+    /** One-off read of the paints of [paletteId] in display order. */
+    suspend fun getPaints(paletteId: Long): List<Paint>
+
     /** Creates a palette and returns its id. */
     suspend fun createPalette(name: String, type: PaletteType): Long
 
@@ -95,6 +98,9 @@ class RoomPaintRepository(
 
     override suspend fun getPalettes(): List<Palette> =
         paletteDao.getAll().map(PaletteEntity::toDomain)
+
+    override suspend fun getPaints(paletteId: Long): List<Paint> =
+        paintDao.getByPalette(paletteId).map(PaintEntity::toDomain)
 
     override suspend fun createPalette(name: String, type: PaletteType): Long =
         paletteDao.insert(
