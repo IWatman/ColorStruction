@@ -179,16 +179,18 @@ Each stage ends with a build (`./gradlew assembleDebug`) and a test run.
 - [ ] Area averaging, result → target or paint color
 
 ### Stage 8. Settings, language, updates
-- [ ] Settings screen
-- [ ] Language switching (System / ru / en), verify every screen in both languages
-- [ ] Update checker: GitHub API, version comparison, download, install
-- [ ] Release signing key (outside the repo), GitHub Secrets
+- [x] Settings screen
+- [x] Language switching (System / ru / en), verify every screen in both languages
+- [x] Update checker: GitHub API, version comparison, download, install
+- [x] Release signing key (outside the repo)
+- [ ] GitHub Secrets for CI signing
 - [ ] GitHub Actions: build + tests on push; on tag `v*` — signed release APK attached to a GitHub Release
 
 ### Stage 9. Polish
 - [ ] Dark theme
 - [ ] App icon, recent colors and favorite recipes
-- [ ] First public release `v1.0.0`; verify updating from an older version on the emulator
+- [ ] First public release `v1.0.0`
+- [x] `v0.1.0` released; in-app update verified on the emulator (0.0.9 → 0.1.0, cancel and back-dismiss do not leave the progress stuck)
 
 ## Possible improvements (post-MVP)
 - Paint calibration from a photo of a swatch (several concentrations with white)

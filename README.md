@@ -3,7 +3,8 @@
 An Android paint mixing helper: pick a target color and ColorStruction tells you which
 of *your own* paints to mix, and in what proportions, to get it.
 
-Status: early development (v0.1.0) — project skeleton only; nothing below is usable yet.
+Status: early version — [v0.1.0](https://github.com/IWatman/ColorStruction/releases/latest)
+is usable; the eyedropper and some polish are still in progress.
 
 ## About
 
@@ -18,17 +19,22 @@ tinting strength) and the app only ever suggests mixes of those.
 
 ## Features
 
-Planned / in development:
+Available in v0.1.0:
 
 - Color wheel picker — hue ring plus a saturation/value square, with markers
 - HEX and RGB input, kept in sync with the wheel
-- Eyedropper on a photo from the gallery or a fresh camera snapshot, with zoom/pan and a
-  magnifier loupe
 - Multiple palettes, each marked as opaque (acrylic, oil, gouache) or watercolor
 - Recipes of up to 5 paints, preferring fewer components when accuracy allows
-- Proportions shown either as parts ("3 : 1 : ½") or as percentages
+- Proportions shown either as parts ("2 : 1½") or as percentages, with the accuracy
+  recomputed after rounding
 - Russian and English UI with in-app language switching
 - In-app update check that installs the latest GitHub release
+
+In development:
+
+- Eyedropper on a photo from the gallery or a fresh camera snapshot, with zoom/pan and a
+  magnifier loupe
+- Dark theme, recent colors, favorite recipes
 
 ## How it works
 
