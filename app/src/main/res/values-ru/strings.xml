@@ -15,6 +15,32 @@
     <string name="settings_title">Настройки</string>
     <string name="settings_placeholder">Здесь появятся настройки приложения.</string>
 
+    <string name="settings_language">Язык</string>
+    <string name="language_system">Как в системе</string>
+    <string name="settings_updates">Обновления</string>
+    <string name="current_version">Версия %1$s</string>
+    <string name="check_updates">Проверить обновления</string>
+    <string name="checking">Проверяю…</string>
+    <string name="up_to_date">У вас последняя версия</string>
+    <string name="update_available">Доступна версия %1$s</string>
+    <string name="release_notes">Что нового</string>
+    <string name="show_more">Показать больше</string>
+    <string name="show_less">Свернуть</string>
+    <string name="download_install">Скачать и установить</string>
+    <string name="downloading">Скачиваю… %1$d%%</string>
+    <string name="installing">Устанавливаю…</string>
+    <string name="install_permission_needed">Разрешите ColorStruction устанавливать обновления</string>
+    <string name="open_settings">Открыть настройки</string>
+    <string name="try_again">Повторить</string>
+    <string name="error_network">Нет подключения к интернету</string>
+    <string name="error_rate_limited">Превышен лимит GitHub, попробуйте позже</string>
+    <string name="error_no_apk">В релизе нет APK-файла</string>
+    <string name="error_generic">Не удалось обновить: %1$s</string>
+    <string name="settings_about">О приложении</string>
+    <string name="about_model">Смешение рассчитывается спектральной моделью Кубелки–Мунка. Результаты приблизительные: реальные пигменты отличаются, поэтому при необходимости подстройте силу тона каждой краски.</string>
+    <string name="source_code">Исходный код на GitHub</string>
+    <string name="third_party_notices">Использует spectral.js (лицензия MIT)</string>
+
     <string name="picker_title">Выбор цвета</string>
     <string name="confirm">Готово</string>
     <string name="back">Назад</string>

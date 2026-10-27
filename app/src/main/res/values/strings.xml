@@ -15,6 +15,32 @@
     <string name="settings_title">Settings</string>
     <string name="settings_placeholder">App settings will appear here.</string>
 
+    <string name="settings_language">Language</string>
+    <string name="language_system">System default</string>
+    <string name="settings_updates">Updates</string>
+    <string name="current_version">Version %1$s</string>
+    <string name="check_updates">Check for updates</string>
+    <string name="checking">Checking…</string>
+    <string name="up_to_date">You have the latest version</string>
+    <string name="update_available">Version %1$s is available</string>
+    <string name="release_notes">What\'s new</string>
+    <string name="show_more">Show more</string>
+    <string name="show_less">Show less</string>
+    <string name="download_install">Download and install</string>
+    <string name="downloading">Downloading… %1$d%%</string>
+    <string name="installing">Installing…</string>
+    <string name="install_permission_needed">Allow ColorStruction to install updates</string>
+    <string name="open_settings">Open settings</string>
+    <string name="try_again">Try again</string>
+    <string name="error_network">No internet connection</string>
+    <string name="error_rate_limited">GitHub limit reached, try again later</string>
+    <string name="error_no_apk">The release has no APK file</string>
+    <string name="error_generic">Update failed: %1$s</string>
+    <string name="settings_about">About</string>
+    <string name="about_model">Mixing is computed with a spectral Kubelka–Munk model. Results are approximate: real pigments differ, so adjust each paint\'s tinting strength if needed.</string>
+    <string name="source_code">Source code on GitHub</string>
+    <string name="third_party_notices">Uses spectral.js (MIT license)</string>
+
     <string name="picker_title">Pick color</string>
     <string name="confirm">Confirm</string>
     <string name="back">Back</string>
