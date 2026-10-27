@@ -3,6 +3,8 @@ package com.colorstruction.data
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.colorstruction.mixing.PaletteType
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.job
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -88,12 +90,13 @@ class SettingsRepositoryTest {
         repository.setActivePalette(7L)
         repository.setMaxComponents(5)
         repository.setRatioFormat(RatioFormat.PERCENT)
-        storeScope.cancel()
+        // DataStore releases the file only once its scope has fully stopped; a plain cancel()
+        // races with opening the second store ("multiple DataStores active for the same file").
+        storeScope.coroutineContext.job.cancelAndJoin()
 
+        storeScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         val reopened = SettingsRepository(
-            PreferenceDataStoreFactory.create(
-                scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
-            ) { settingsFile },
+            PreferenceDataStoreFactory.create(scope = storeScope) { settingsFile },
         )
 
         val settings = reopened.settings.first()
