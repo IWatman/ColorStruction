@@ -87,6 +87,13 @@ android {
             test.systemProperty("java.io.tmpdir", tempDir.absolutePath)
         }
     }
+
+    sourceSets {
+        // Exposes the exported Room schemas as assets so MigrationTestHelper can read them.
+        // Robolectric loads the debug variant's merged assets, so the schemas must be merged
+        // into the debug source set rather than the unknown "test" asset folder.
+        getByName("debug").assets.srcDir("$projectDir/schemas")
+    }
 }
 
 ksp {

@@ -2,7 +2,9 @@ package com.colorstruction
 
 import android.content.Context
 import com.colorstruction.data.ColorStructionDatabase
+import com.colorstruction.data.FavoriteRepository
 import com.colorstruction.data.PaintRepository
+import com.colorstruction.data.RoomFavoriteRepository
 import com.colorstruction.data.RoomPaintRepository
 import com.colorstruction.data.SettingsRepository
 import com.colorstruction.update.GitHubReleaseSource
@@ -31,6 +33,9 @@ class AppContainer(context: Context) {
 
     /** Palettes and paints. */
     val paintRepository: PaintRepository = RoomPaintRepository(database)
+
+    /** Saved favorite recipes (snapshots, independent of later paint edits). */
+    val favoriteRepository: FavoriteRepository = RoomFavoriteRepository(database)
 
     /** User settings stored in DataStore. */
     val settingsRepository: SettingsRepository = SettingsRepository.fromContext(appContext)
