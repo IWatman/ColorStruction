@@ -81,12 +81,15 @@ enum class Accuracy {
 }
 
 /**
- * Maps a recipe's color difference to an [Accuracy] bucket:
+ * Maps a color difference to an [Accuracy] bucket:
  * ΔE < 2 almost exact, ΔE < 5 close, ΔE < 10 similar, otherwise not possible.
  */
-fun Recipe.accuracy(): Accuracy = when {
+fun accuracyOf(deltaE: Double): Accuracy = when {
     deltaE < 2.0 -> Accuracy.ALMOST_EXACT
     deltaE < 5.0 -> Accuracy.CLOSE
     deltaE < 10.0 -> Accuracy.SIMILAR
     else -> Accuracy.NOT_POSSIBLE
 }
+
+/** Maps this recipe's color difference to an [Accuracy] bucket; see [accuracyOf]. */
+fun Recipe.accuracy(): Accuracy = accuracyOf(deltaE)

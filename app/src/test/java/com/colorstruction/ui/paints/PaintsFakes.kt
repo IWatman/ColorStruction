@@ -5,6 +5,7 @@ import com.colorstruction.data.AppSettings
 import com.colorstruction.data.Paint
 import com.colorstruction.data.PaintRepository
 import com.colorstruction.data.Palette
+import com.colorstruction.data.RatioFormat
 import com.colorstruction.data.SettingsStore
 import com.colorstruction.mixing.PaletteType
 import kotlinx.coroutines.flow.Flow
@@ -115,5 +116,18 @@ internal class FakeSettingsStore(initial: AppSettings = AppSettings()) : Setting
 
     override suspend fun setActivePalette(paletteId: Long?) {
         state.value = state.value.copy(activePaletteId = paletteId)
+    }
+
+    override suspend fun setMaxComponents(value: Int) {
+        state.value = state.value.copy(
+            maxComponents = value.coerceIn(
+                AppSettings.MIN_MAX_COMPONENTS,
+                AppSettings.MAX_MAX_COMPONENTS,
+            ),
+        )
+    }
+
+    override suspend fun setRatioFormat(format: RatioFormat) {
+        state.value = state.value.copy(ratioFormat = format)
     }
 }

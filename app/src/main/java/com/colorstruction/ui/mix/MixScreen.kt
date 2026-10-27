@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,13 +32,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.colorstruction.R
 import com.colorstruction.color.Rgb
+import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /** SavedStateHandle key through which the picker returns the confirmed color. */
 const val PICKED_COLOR_KEY = "picked_color"
 
+/** Placeholder name of the virtual water component until recipe cards land. */
+private const val WATER_COMPONENT_NAME = "Water"
+
 /**
- * Mixing overview: shows the target color and opens the color picker.
+ * Mixing overview: target color, pick button and the current recipes.
  *
  * @param onPickColor invoked with the current target color when the pick button is pressed
  * @param savedStateHandle handle of this destination, used to receive the picked color
@@ -47,9 +52,10 @@ fun MixScreen(
     onPickColor: (Rgb) -> Unit,
     savedStateHandle: SavedStateHandle?,
     modifier: Modifier = Modifier,
-    viewModel: MixViewModel = viewModel(),
+    viewModel: MixViewModel = viewModel(factory = MixViewModel.Factory),
 ) {
-    val target by viewModel.target.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val target = uiState.target
 
     val pickedFlow = remember(savedStateHandle) {
         savedStateHandle?.getStateFlow<Int?>(PICKED_COLOR_KEY, null) ?: MutableStateFlow<Int?>(null)
@@ -97,5 +103,25 @@ fun MixScreen(
                 modifier = Modifier.padding(start = 8.dp),
             )
         }
+        if (uiState.isSolving) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            Text(text = stringResource(R.string.solving), style = MaterialTheme.typography.bodyMedium)
+        }
+        if (uiState.paintCount == 0) {
+            Text(
+                text = stringResource(R.string.no_paints_in_palette),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        } else {
+            uiState.recipes.forEach { recipe ->
+                Text(text = recipe.summary(), style = MaterialTheme.typography.bodyMedium)
+            }
+        }
     }
+}
+
+/** Temporary one-line recipe summary; part B replaces this with recipe cards. */
+private fun RecipeUi.summary(): String {
+    val names = recipe.components.joinToString(" + ") { it.paint?.name ?: WATER_COMPONENT_NAME }
+    return "$names — $proportionsText — ΔE " + String.format(Locale.ROOT, "%.1f", roundedDeltaE)
 }

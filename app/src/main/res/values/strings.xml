@@ -27,6 +27,8 @@
     <string name="pick_color">Pick color</string>
     <string name="target_color">Target color</string>
     <string name="initial_color">Initial color</string>
+    <string name="solving">Mixing…</string>
+    <string name="no_paints_in_palette">Add paints to the palette to get recipes</string>
 
     <string name="palette">Palette</string>
     <string name="new_palette">New palette</string>

@@ -27,6 +27,8 @@
     <string name="pick_color">Выбрать цвет</string>
     <string name="target_color">Целевой цвет</string>
     <string name="initial_color">Исходный цвет</string>
+    <string name="solving">Подбираю…</string>
+    <string name="no_paints_in_palette">Добавьте краски в палитру, чтобы получить рецепты</string>
 
     <string name="palette">Палитра</string>
     <string name="new_palette">Новая палитра</string>

@@ -54,6 +54,15 @@ interface SettingsStore {
 
     /** Makes [paletteId] the active palette, or clears the selection with `null`. */
     suspend fun setActivePalette(paletteId: Long?)
+
+    /**
+     * Stores the paint cap per recipe, clamped to
+     * [AppSettings.MIN_MAX_COMPONENTS]..[AppSettings.MAX_MAX_COMPONENTS].
+     */
+    suspend fun setMaxComponents(value: Int)
+
+    /** Stores the proportions format. */
+    suspend fun setRatioFormat(format: RatioFormat)
 }
 
 /**
@@ -85,13 +94,13 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) : Settin
      * Stores the paint cap per recipe, clamped to
      * [AppSettings.MIN_MAX_COMPONENTS]..[AppSettings.MAX_MAX_COMPONENTS].
      */
-    suspend fun setMaxComponents(value: Int) {
+    override suspend fun setMaxComponents(value: Int) {
         val clamped = value.coerceIn(AppSettings.MIN_MAX_COMPONENTS, AppSettings.MAX_MAX_COMPONENTS)
         dataStore.edit { preferences -> preferences[KEY_MAX_COMPONENTS] = clamped }
     }
 
     /** Stores the proportions format. */
-    suspend fun setRatioFormat(format: RatioFormat) {
+    override suspend fun setRatioFormat(format: RatioFormat) {
         dataStore.edit { preferences -> preferences[KEY_RATIO_FORMAT] = format.name }
     }
 
