@@ -49,7 +49,7 @@ private val SwatchShape = RoundedCornerShape(6.dp)
  */
 @Composable
 internal fun FavoriteCard(favorite: FavoriteRecipe, onOpen: () -> Unit, onDelete: () -> Unit) {
-    val parts = Proportions.toParts(favorite.components.map { it.weight })
+    val parts = Proportions.exactParts(favorite.components.map { it.weight })
     ElevatedCard(Modifier.fillMaxWidth().clickable(onClick = onOpen)) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {

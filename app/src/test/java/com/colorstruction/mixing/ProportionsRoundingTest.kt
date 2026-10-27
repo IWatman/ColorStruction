@@ -125,4 +125,19 @@ class ProportionsRoundingTest {
     fun choosePartsReturnsNullForNoCandidates() {
         assertNull(Proportions.chooseParts(emptyList(), 1.0) { 0.0 })
     }
+
+    @Test
+    fun exactPartsRecoversTheDisplayedParts() {
+        fun normalized(vararg parts: Double) = parts.map { it / parts.sum() }
+
+        assertEquals(listOf(2.5, 1.5), Proportions.exactParts(normalized(2.5, 1.5)))
+        assertEquals(listOf(4.0, 2.0, 1.5), Proportions.exactParts(normalized(4.0, 2.0, 1.5)))
+        assertEquals(listOf(1.0, 1.0), Proportions.exactParts(normalized(0.5, 0.5)))
+    }
+
+    @Test
+    fun exactPartsFallsBackForArbitraryWeights() {
+        val weights = listOf(0.613, 0.387)
+        assertEquals(Proportions.toParts(weights), Proportions.exactParts(weights))
+    }
 }

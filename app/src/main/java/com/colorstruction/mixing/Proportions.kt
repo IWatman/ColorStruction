@@ -4,6 +4,7 @@ import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.round
+import kotlin.math.roundToInt
 
 /**
  * Converts solver weights into human-readable proportions: percents (integers summing to 100)
@@ -155,6 +156,23 @@ object Proportions {
             candidates.add(plain)
         }
         return candidates.sortedWith(CANDIDATE_ORDER)
+    }
+
+    /**
+     * Recovers the exact parts that produced [weights] (e.g. weights saved from a displayed
+     * `2½ : 1½` recipe), instead of rounding them again. Falls back to [toParts] when the weights
+     * don't come from ½-step parts with a total of at most [maxTotal].
+     */
+    fun exactParts(weights: List<Double>, maxTotal: Int = 20): List<Double> {
+        val total = weights.sum()
+        if (weights.isEmpty() || total <= 0.0) return toParts(weights)
+        for (halves in 1..maxTotal * 2) {
+            val scaled = weights.map { it / total * halves }
+            if (scaled.all { abs(it - it.roundToInt()) < 1e-6 }) {
+                return withWholeSmallest(scaled.map { it.roundToInt() / 2.0 })
+            }
+        }
+        return toParts(weights)
     }
 
     /** Doubles [parts] when the smallest non-zero part is ½, so `½ : ½` reads as `1 : 1`. */

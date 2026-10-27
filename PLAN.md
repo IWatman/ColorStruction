@@ -189,7 +189,7 @@ Each stage ends with a build (`./gradlew assembleDebug`) and a test run.
 ### Stage 9. Polish
 - [x] Dark theme (system / light / dark setting)
 - [x] App icon, recent colors and favorite recipes (DB v2 migration verified 0.3.0 → 0.4.0)
-- [ ] First public release `v1.0.0`
+- [x] First public release `v1.0.0` (R8-minified, README with screenshots)
 - [x] `v0.1.0` released; in-app update verified on the emulator (0.0.9 → 0.1.0, cancel and back-dismiss do not leave the progress stuck)
 
 ## Possible improvements (post-MVP)
