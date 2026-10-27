@@ -6,7 +6,9 @@ import com.colorstruction.data.Paint
 import com.colorstruction.data.PaintRepository
 import com.colorstruction.data.Palette
 import com.colorstruction.data.RatioFormat
+import com.colorstruction.data.SettingsRepository
 import com.colorstruction.data.SettingsStore
+import com.colorstruction.data.ThemeMode
 import com.colorstruction.mixing.PaletteType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -129,5 +131,15 @@ internal class FakeSettingsStore(initial: AppSettings = AppSettings()) : Setting
 
     override suspend fun setRatioFormat(format: RatioFormat) {
         state.value = state.value.copy(ratioFormat = format)
+    }
+
+    override suspend fun setThemeMode(mode: ThemeMode) {
+        state.value = state.value.copy(themeMode = mode)
+    }
+
+    override suspend fun addRecentColor(argb: Int) {
+        val updated = (listOf(argb) + state.value.recentColors.filterNot { it == argb })
+            .take(SettingsRepository.MAX_RECENT_COLORS)
+        state.value = state.value.copy(recentColors = updated)
     }
 }

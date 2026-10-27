@@ -24,6 +24,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory),
 ) {
     val language by viewModel.language.collectAsStateWithLifecycle()
+    val theme by viewModel.themeMode.collectAsStateWithLifecycle()
     val updateState by viewModel.updateState.collectAsStateWithLifecycle()
 
     Column(
@@ -40,6 +41,11 @@ fun SettingsScreen(
         LanguageSection(
             selected = language,
             onSelect = viewModel::setLanguage,
+        )
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+        ThemeSection(
+            selected = theme,
+            onSelect = viewModel::setThemeMode,
         )
         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
         UpdateSection(

@@ -75,6 +75,16 @@ class MixViewModelTest {
     }
 
     @Test
+    fun freshStartResumesWithTheLastRecentColor() = runTest(dispatcher) {
+        val settings = FakeSettingsStore(
+            AppSettings(activePaletteId = 1L, recentColors = listOf(blue.toArgbInt(), red.toArgbInt())),
+        )
+        val viewModel = observe(createViewModel(filledRepository(), settings))
+
+        assertEquals(blue.toArgbInt(), viewModel.uiState.value.target.toArgbInt())
+    }
+
+    @Test
     fun targetEqualToPaintGivesSinglePaintRecipe() = runTest(dispatcher) {
         val viewModel = observe(createViewModel(filledRepository()))
         viewModel.setTarget(blue)
@@ -142,6 +152,25 @@ class MixViewModelTest {
         assertEquals(1, state.maxComponents)
         assertTrue(state.recipes.isNotEmpty())
         assertTrue(state.recipes.all { it.recipe.paintCount == 1 })
+    }
+
+    @Test
+    fun setTargetRecordsRecentColors() = runTest(dispatcher) {
+        val settings = FakeSettingsStore(AppSettings(activePaletteId = 1L))
+        val viewModel = observe(createViewModel(filledRepository(), settings))
+
+        viewModel.setTarget(blue)
+        advanceUntilIdle()
+        viewModel.setTarget(yellow)
+        advanceUntilIdle()
+        // Re-selecting an existing color moves it to the front without duplicating it.
+        viewModel.setTarget(blue)
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf(blue.toArgbInt(), yellow.toArgbInt()),
+            viewModel.uiState.value.recentColors,
+        )
     }
 
     private fun RecipeUi.singlePaintName(): String? =

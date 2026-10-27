@@ -19,6 +19,10 @@
     <string name="language_system">System default</string>
     <string name="lang_name_ru" translatable="false">Русский</string>
     <string name="lang_name_en" translatable="false">English</string>
+    <string name="settings_theme">Theme</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="recent_colors">Recent</string>
     <string name="settings_updates">Updates</string>
     <string name="current_version">Version %1$s</string>
     <string name="check_updates">Check for updates</string>

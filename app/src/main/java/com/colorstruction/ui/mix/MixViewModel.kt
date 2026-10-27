@@ -44,6 +44,19 @@ class MixViewModel(
         Rgb.fromArgbInt(savedStateHandle.get<Int>(KEY_TARGET_ARGB) ?: DEFAULT_TARGET_ARGB),
     )
 
+    init {
+        // A fresh start (not a restored screen) resumes with the last color the user worked on.
+        if (savedStateHandle.get<Int>(KEY_TARGET_ARGB) == null) {
+            viewModelScope.launch {
+                val last = appSettings.first().recentColors.firstOrNull() ?: return@launch
+                if (savedStateHandle.get<Int>(KEY_TARGET_ARGB) == null) {
+                    savedStateHandle[KEY_TARGET_ARGB] = last
+                    _target.value = Rgb.fromArgbInt(last)
+                }
+            }
+        }
+    }
+
     /** A palette with its paints; [paints] is empty when there is no palette. */
     private data class PalettePaints(val palette: Palette?, val paints: List<Paint>)
 
@@ -94,18 +107,26 @@ class MixViewModel(
         }.flowOn(solverDispatcher)
     }
 
+    /** Recently used target colors, most recent first. */
+    private val recentColors: Flow<List<Int>> = appSettings
+        .map { it.recentColors }
+        .distinctUntilChanged()
+
     /** Current screen state, refreshed after every change that affects the recipes. */
-    val uiState: StateFlow<MixUiState> = solved.stateIn(
+    val uiState: StateFlow<MixUiState> = combine(solved, recentColors) { state, recents ->
+        state.copy(recentColors = recents)
+    }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
         MixUiState(_target.value),
     )
 
-    /** Sets and persists [rgb] as the target color. */
+    /** Sets and persists [rgb] as the target color and records it among recent colors. */
     fun setTarget(rgb: Rgb) {
         val argb = rgb.toArgbInt()
         savedStateHandle[KEY_TARGET_ARGB] = argb
         _target.value = Rgb.fromArgbInt(argb)
+        viewModelScope.launch { settings.addRecentColor(argb) }
     }
 
     /** Sets how many paints one recipe may use. */

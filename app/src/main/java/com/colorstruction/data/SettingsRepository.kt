@@ -27,11 +27,15 @@ enum class RatioFormat {
  * @property maxComponents cap on paints per recipe, always within
  *   [AppSettings.MIN_MAX_COMPONENTS]..[AppSettings.MAX_MAX_COMPONENTS].
  * @property ratioFormat how proportions are rendered.
+ * @property themeMode how the app chooses between light and dark schemes.
+ * @property recentColors last distinct target colors as ARGB ints, most recent first.
  */
 data class AppSettings(
     val activePaletteId: Long? = null,
     val maxComponents: Int = SettingsRepository.DEFAULT_MAX_COMPONENTS,
     val ratioFormat: RatioFormat = RatioFormat.PARTS,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val recentColors: List<Int> = emptyList(),
 ) {
     companion object {
         /** Inclusive lower bound of [maxComponents]. */
@@ -63,6 +67,15 @@ interface SettingsStore {
 
     /** Stores the proportions format. */
     suspend fun setRatioFormat(format: RatioFormat)
+
+    /** Stores how the app chooses between light and dark schemes. */
+    suspend fun setThemeMode(mode: ThemeMode)
+
+    /**
+     * Records [argb] as the most recent target color, moving it to the front and
+     * keeping at most [SettingsRepository.MAX_RECENT_COLORS] distinct colors.
+     */
+    suspend fun addRecentColor(argb: Int)
 }
 
 /**
@@ -104,9 +117,30 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) : Settin
         dataStore.edit { preferences -> preferences[KEY_RATIO_FORMAT] = format.name }
     }
 
+    /** Stores how the app chooses between light and dark schemes. */
+    override suspend fun setThemeMode(mode: ThemeMode) {
+        dataStore.edit { preferences -> preferences[KEY_THEME_MODE] = mode.name }
+    }
+
+    /**
+     * Records [argb] as the most recent target color, moving it to the front and
+     * keeping at most [SettingsRepository.MAX_RECENT_COLORS] distinct colors.
+     */
+    override suspend fun addRecentColor(argb: Int) {
+        dataStore.edit { preferences ->
+            val current = parseRecentColors(preferences[KEY_RECENT_COLORS])
+            val updated = (listOf(argb) + current.filterNot { it == argb })
+                .take(MAX_RECENT_COLORS)
+            preferences[KEY_RECENT_COLORS] = updated.joinToString(",")
+        }
+    }
+
     companion object {
         /** Default paint cap per recipe. */
         const val DEFAULT_MAX_COMPONENTS: Int = 3
+
+        /** Maximum number of recent target colors kept. */
+        const val MAX_RECENT_COLORS: Int = 12
 
         /** Settings stored in the app's private storage, shared by the whole process. */
         fun fromContext(context: Context): SettingsRepository =
@@ -121,6 +155,8 @@ private val Context.settingsDataStore: DataStore<Preferences> by preferencesData
 private val KEY_ACTIVE_PALETTE_ID = longPreferencesKey("active_palette_id")
 private val KEY_MAX_COMPONENTS = intPreferencesKey("max_components")
 private val KEY_RATIO_FORMAT = stringPreferencesKey("ratio_format")
+private val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
+private val KEY_RECENT_COLORS = stringPreferencesKey("recent_colors")
 
 private fun Preferences.toAppSettings(): AppSettings = AppSettings(
     activePaletteId = this[KEY_ACTIVE_PALETTE_ID],
@@ -128,7 +164,17 @@ private fun Preferences.toAppSettings(): AppSettings = AppSettings(
         .coerceIn(AppSettings.MIN_MAX_COMPONENTS, AppSettings.MAX_MAX_COMPONENTS),
     ratioFormat = RatioFormat.entries.firstOrNull { it.name == this[KEY_RATIO_FORMAT] }
         ?: RatioFormat.PARTS,
+    themeMode = ThemeMode.entries.firstOrNull { it.name == this[KEY_THEME_MODE] }
+        ?: ThemeMode.SYSTEM,
+    recentColors = parseRecentColors(this[KEY_RECENT_COLORS]),
 )
+
+/** Parses the comma-separated recent colors, dropping garbage and capping the size. */
+private fun parseRecentColors(raw: String?): List<Int> =
+    raw?.split(',')
+        ?.mapNotNull { it.trim().toIntOrNull() }
+        ?.take(SettingsRepository.MAX_RECENT_COLORS)
+        ?: emptyList()
 
 /**
  * Returns the palette the app should currently work with.

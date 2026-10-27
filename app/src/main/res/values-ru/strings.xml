@@ -17,6 +17,10 @@
 
     <string name="settings_language">Язык</string>
     <string name="language_system">Как в системе</string>
+    <string name="settings_theme">Тема</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="recent_colors">Недавние</string>
     <string name="settings_updates">Обновления</string>
     <string name="current_version">Версия %1$s</string>
     <string name="check_updates">Проверить обновления</string>

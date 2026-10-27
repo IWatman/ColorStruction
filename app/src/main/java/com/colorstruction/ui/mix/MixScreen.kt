@@ -3,6 +3,7 @@ package com.colorstruction.ui.mix
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -79,6 +81,14 @@ fun MixScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item { TargetSection(target, onPickColor, onPickFromImage) }
+        if (uiState.recentColors.isNotEmpty()) {
+            item {
+                RecentColors(
+                    colors = uiState.recentColors,
+                    onSelect = { argb -> viewModel.setTarget(Rgb.fromArgbInt(argb)) },
+                )
+            }
+        }
         item {
             MixControls(
                 ratioFormat = uiState.ratioFormat,
@@ -128,6 +138,26 @@ private fun TargetSection(
                 Text(stringResource(R.string.pick_color), Modifier.padding(start = 8.dp))
             }
             ImageSourceMenu(onPickFromImage = onPickFromImage)
+        }
+    }
+}
+
+/** Recently used target colors as tappable swatches. */
+@Composable
+private fun RecentColors(colors: List<Int>, onSelect: (Int) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.recent_colors), style = MaterialTheme.typography.titleMedium)
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(colors) { argb ->
+                Box(
+                    Modifier
+                        .size(32.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(argb))
+                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
+                        .clickable { onSelect(argb) },
+                )
+            }
         }
     }
 }

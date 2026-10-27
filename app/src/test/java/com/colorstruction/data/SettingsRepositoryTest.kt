@@ -127,4 +127,47 @@ class SettingsRepositoryTest {
         assertEquals(1L, resolved?.id)
         assertNull(resolveActivePalette(emptyList(), AppSettings(activePaletteId = 1L)))
     }
+
+    @Test
+    fun storesThemeMode() = runTest {
+        assertEquals(ThemeMode.SYSTEM, repository.settings.first().themeMode)
+
+        repository.setThemeMode(ThemeMode.DARK)
+        assertEquals(ThemeMode.DARK, repository.settings.first().themeMode)
+    }
+
+    @Test
+    fun addRecentColorKeepsOrderAndDedupes() = runTest {
+        repository.addRecentColor(1)
+        repository.addRecentColor(2)
+        repository.addRecentColor(3)
+        assertEquals(listOf(3, 2, 1), repository.settings.first().recentColors)
+
+        repository.addRecentColor(2)
+        assertEquals(listOf(2, 3, 1), repository.settings.first().recentColors)
+    }
+
+    @Test
+    fun addRecentColorCapsAtTwelve() = runTest {
+        (1..15).forEach { repository.addRecentColor(it) }
+
+        val colors = repository.settings.first().recentColors
+        assertEquals(SettingsRepository.MAX_RECENT_COLORS, colors.size)
+        assertEquals(15, colors.first())
+        assertEquals(4, colors.last())
+    }
+
+    @Test
+    fun keepsRecentColorsAcrossRepositoryInstances() = runTest {
+        repository.addRecentColor(11)
+        repository.addRecentColor(22)
+        storeScope.coroutineContext.job.cancelAndJoin()
+
+        storeScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        val reopened = SettingsRepository(
+            PreferenceDataStoreFactory.create(scope = storeScope) { settingsFile },
+        )
+
+        assertEquals(listOf(22, 11), reopened.settings.first().recentColors)
+    }
 }

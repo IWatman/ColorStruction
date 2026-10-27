@@ -36,6 +36,7 @@ data class MixUiState(
     val ratioFormat: RatioFormat = RatioFormat.PARTS,
     val isSolving: Boolean = false,
     val recipes: List<RecipeUi> = emptyList(),
+    val recentColors: List<Int> = emptyList(),
 )
 
 /** Rounds [recipe]'s weights into display proportions and re-evaluates the mix with them. */
