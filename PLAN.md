@@ -145,13 +145,13 @@ Each stage ends with a build (`./gradlew assembleDebug`) and a test run.
 - [x] Tests: blue + yellow → green; color + 0% of another = itself; white lightens
 
 ### Stage 2. Solver (`mixing/`)
-- [ ] Weight optimization for a combination, combination search, top-N
-- [ ] Rounding to parts + ΔE recomputation
-- [ ] Tests: target = a paint from the list → 1-component recipe, ΔE≈0;
+- [x] Weight optimization for a combination, combination search, top-N
+- [x] Rounding to parts + ΔE recomputation
+- [x] Tests: target = a paint from the list → 1-component recipe, ΔE≈0;
       target = a known mix of 2 paints → finds it
-- [ ] Beam search for 4–5 components, preference for fewer paints
-- [ ] Watercolor mode ("water" component)
-- [ ] Benchmark: 30 paints, up to 5 components — < 1–2 s on an average phone
+- [x] Beam search for 4–5 components, preference for fewer paints
+- [x] Watercolor mode ("water" component)
+- [x] Benchmark: 30 paints, up to 5 components — < 1–2 s on an average phone
 
 ### Stage 3. Storage
 - [ ] Room: Palette, Paint, DAOs, migrations; repository
