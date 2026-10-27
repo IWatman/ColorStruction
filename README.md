@@ -8,6 +8,7 @@
 [![CI](https://github.com/IWatman/ColorStruction/actions/workflows/ci.yml/badge.svg)](https://github.com/IWatman/ColorStruction/actions/workflows/ci.yml)
 ![Android 8.0+](https://img.shields.io/badge/Android-8.0%2B-3ddc84?logo=android&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Kotlin-Jetpack%20Compose-7f52ff?logo=kotlin&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 <img src="docs/screenshots/mix.png" width="240" alt="Mixing recipes for a target color">
 &nbsp;
@@ -133,4 +134,4 @@ by Ronald van Wijnen (MIT) — see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.
 
 ## License
 
-Not chosen yet.
+[MIT](LICENSE) © 2026 IWatman
