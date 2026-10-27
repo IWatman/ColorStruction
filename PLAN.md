@@ -154,9 +154,9 @@ Each stage ends with a build (`./gradlew assembleDebug`) and a test run.
 - [x] Benchmark: 30 paints, up to 5 components — < 1–2 s on an average phone
 
 ### Stage 3. Storage
-- [ ] Room: Palette, Paint, DAOs, migrations; repository
-- [ ] Starter palette "Basic Acrylic" on first launch
-- [ ] DataStore for settings
+- [x] Room: Palette, Paint, DAOs, migrations; repository
+- [x] Starter palette "Basic Acrylic" on first launch
+- [x] DataStore for settings
 
 ### Stage 4. Color wheel (component `ui/picker/ColorWheel`)
 - [ ] Canvas: hue ring (sweep gradient), S/V square (two gradients)

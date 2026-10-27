@@ -43,3 +43,7 @@ keystore.properties
 kotlin-daemon.*.log*
 hsperfdata_*/
 /AppData/
+
+# Test runtime leftovers (Robolectric / sqlite-jdbc)
+robolectric-*/
+sqlite-*.dll
