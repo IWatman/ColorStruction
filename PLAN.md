@@ -139,10 +139,10 @@ Each stage ends with a build (`./gradlew assembleDebug`) and a test run.
 - [x] Debug APK builds and runs on the emulator
 
 ### Stage 1. Color math (`color/`, pure Kotlin, no Android)
-- [ ] sRGB ↔ linear RGB ↔ XYZ ↔ CIELAB, HSV ↔ RGB, HEX parse/format
-- [ ] CIEDE2000 + tests against reference pairs (Sharma et al.)
-- [ ] Spectral model + Kubelka–Munk mixing
-- [ ] Tests: blue + yellow → green; color + 0% of another = itself; white lightens
+- [x] sRGB ↔ linear RGB ↔ XYZ ↔ CIELAB, HSV ↔ RGB, HEX parse/format
+- [x] CIEDE2000 + tests against reference pairs (Sharma et al.)
+- [x] Spectral model + Kubelka–Munk mixing
+- [x] Tests: blue + yellow → green; color + 0% of another = itself; white lightens
 
 ### Stage 2. Solver (`mixing/`)
 - [ ] Weight optimization for a combination, combination search, top-N
