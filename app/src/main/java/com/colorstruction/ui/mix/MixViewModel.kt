@@ -125,6 +125,8 @@ class MixViewModel(
     ): List<RecipeUi> = solver
         .solve(request.target, request.maxComponents, RESULT_COUNT, isCancelled)
         .map { recipe -> recipeUi(recipe, request.target, request.ratioFormat, solver) }
+        // Same rule as the solver, now on the rounded numbers: one extra paint costs 1.0 ΔE.
+        .sortedBy { it.roundedDeltaE + it.recipe.paintCount }
 
     private fun Request.toState(isSolving: Boolean, recipes: List<RecipeUi>): MixUiState =
         MixUiState(target, palette, paints.size, maxComponents, ratioFormat, isSolving, recipes)

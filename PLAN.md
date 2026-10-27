@@ -169,9 +169,9 @@ Each stage ends with a build (`./gradlew assembleDebug`) and a test run.
 - [x] Add-paint dialog: custom name, color (wheel/HEX/eyedropper), tinting strength
 
 ### Stage 6. Home screen + recipes
-- [ ] ViewModel: target → solver (debounce, cancellation) → recipe list
-- [ ] Recipe cards: swatches, parts/%, "result vs target", ΔE badge
-- [ ] Empty states: no paints, nothing close found
+- [x] ViewModel: target → solver (debounce, cancellation) → recipe list
+- [x] Recipe cards: swatches, parts/%, "result vs target", ΔE badge
+- [x] Empty states: no paints, nothing close found
 
 ### Stage 7. Eyedropper
 - [ ] Photo Picker (no storage permissions) + camera snapshot via FileProvider

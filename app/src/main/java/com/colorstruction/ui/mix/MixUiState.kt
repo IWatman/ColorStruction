@@ -46,11 +46,22 @@ fun recipeUi(
     solver: RecipeSolver,
 ): RecipeUi {
     val weights = recipe.components.map { it.weight }
-    val (displayWeights, proportionsText) = when (ratioFormat) {
-        RatioFormat.PARTS -> Proportions.toParts(weights)
-            .let { parts -> parts to Proportions.formatParts(parts) }
-        RatioFormat.PERCENT -> Proportions.toPercents(weights)
-            .let { percents -> percents.map { it.toDouble() } to percents.joinToString(" / ") { "$it%" } }
+    // Rounding to parts can cost accuracy, so prefer the simplest rounding that stays within
+    // half a ΔE of the unrounded recipe and fall back to the most accurate candidate.
+    val displayWeights: List<Double> = when (ratioFormat) {
+        RatioFormat.PARTS -> Proportions
+            .partsCandidates(weights)
+            .take(Proportions.MAX_CANDIDATES)
+            .let { candidates ->
+                Proportions.chooseParts(candidates, recipe.deltaE) { parts ->
+                    solver.evaluate(target, recipe, parts).deltaE
+                }
+            } ?: Proportions.toParts(weights)
+        RatioFormat.PERCENT -> Proportions.toPercents(weights).map { it.toDouble() }
+    }
+    val proportionsText = when (ratioFormat) {
+        RatioFormat.PARTS -> Proportions.formatParts(displayWeights)
+        RatioFormat.PERCENT -> displayWeights.joinToString(" / ") { "${it.toInt()}%" }
     }
     val rounded = solver.evaluate(target, recipe, displayWeights)
     return RecipeUi(

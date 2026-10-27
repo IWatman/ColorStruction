@@ -18,6 +18,15 @@ object Proportions {
     private const val PART_STEP = 0.5
 
     /**
+     * How much worse than the unrounded recipe a rounded one may become before a simpler
+     * candidate is rejected; see [chooseParts].
+     */
+    private const val ROUNDING_SLACK = 0.5
+
+    /** Upper bound on the candidates [recipeUi] evaluates, so rounding stays cheap. */
+    const val MAX_CANDIDATES: Int = 40
+
+    /**
      * Converts weights into percentages (integers) that sum to exactly 100.
      *
      * Uses the largest remainder (Hare–Niemeyer) method on top of a floor allocation, and
@@ -111,13 +120,89 @@ object Proportions {
     }
 
     /**
+     * Lists the part vectors worth showing for [weights], simplest first.
+     *
+     * One candidate is generated per allowed total (from ½ up to [maxTotal]) by rounding the
+     * weights to that total, together with the [toParts] result when it is missing. Every
+     * candidate uses ½ steps, gives each non-zero weight at least ½ and sums to at most
+     * [maxTotal]; duplicates are dropped and the list is ordered by total, so the shortest
+     * recipes come first and a longer, more accurate one follows.
+     *
+     * @param weights component weights; only ratios matter.
+     * @param maxTotal largest allowed sum of parts.
+     * @return up to `2 × maxTotal` distinct part vectors; empty for empty or all-zero weights.
+     */
+    fun partsCandidates(weights: List<Double>, maxTotal: Int = 20): List<List<Double>> {
+        if (weights.isEmpty() || maxTotal < 1) return emptyList()
+        val sanitized = sanitize(weights)
+        val total = sanitized.sum()
+        if (total <= 0.0) return emptyList()
+        val proportions = sanitized.map { it / total }
+        val maxHalves = maxTotal * 2
+
+        val candidates = LinkedHashSet<List<Double>>()
+        for (totalHalves in 1..maxHalves) {
+            val halves = roundToHalves(proportions, totalHalves, maxHalves)
+            if (halves.isEmpty()) continue
+            val parts = withWholeSmallest(halves.map { it / 2.0 })
+            if (parts.sum() <= maxTotal + EPSILON) candidates.add(parts)
+        }
+        // Guarantee that the plain rounding of toParts is always among the candidates.
+        val plain = withWholeSmallest(toParts(weights))
+        if (plain.isNotEmpty() && plain.sum() <= maxTotal + EPSILON &&
+            plain.all { it == 0.0 || it >= PART_STEP - EPSILON }
+        ) {
+            candidates.add(plain)
+        }
+        return candidates.sortedWith(CANDIDATE_ORDER)
+    }
+
+    /** Doubles [parts] when the smallest non-zero part is ½, so `½ : ½` reads as `1 : 1`. */
+    private fun withWholeSmallest(parts: List<Double>): List<Double> {
+        val smallest = parts.filter { it > 0.0 }.minOrNull() ?: return parts
+        return if (smallest < 1.0 - EPSILON) parts.map { it * 2.0 } else parts
+    }
+
+    /**
+     * Picks the simplest candidate whose rounding does not visibly hurt the recipe.
+     *
+     * Candidates are expected simplest first, as [partsCandidates] returns them. The first one
+     * whose ΔE is at most [unroundedDeltaE] plus [ROUNDING_SLACK] is returned; when none
+     * qualifies, the candidate with the lowest ΔE wins (the first one on ties).
+     *
+     * @param candidates ordered part vectors, normally from [partsCandidates].
+     * @param unroundedDeltaE colour difference of the recipe before rounding.
+     * @param evaluate maps a part vector to the ΔE it produces.
+     * @return the chosen candidate, or `null` when [candidates] is empty.
+     */
+    fun chooseParts(
+        candidates: List<List<Double>>,
+        unroundedDeltaE: Double,
+        evaluate: (List<Double>) -> Double,
+    ): List<Double>? {
+        if (candidates.isEmpty()) return null
+        var best: List<Double>? = null
+        var bestDeltaE = Double.MAX_VALUE
+        for (candidate in candidates) {
+            val deltaE = evaluate(candidate)
+            if (deltaE < bestDeltaE) {
+                bestDeltaE = deltaE
+                best = candidate
+            }
+            if (deltaE <= unroundedDeltaE + ROUNDING_SLACK) return candidate
+        }
+        return best
+    }
+
+    /**
      * Formats parts as a `3 : 1 : ½` string; `0.5` becomes `½` and `1.5` becomes `1½`.
      *
      * @param parts part values, normally produced by [toParts].
      */
     fun formatParts(parts: List<Double>): String = parts.joinToString(" : ") { formatPart(it) }
 
-    private fun formatPart(value: Double): String {
+    /** Formats a single part value: `0.5` becomes `½`, `1.5` becomes `1½`. */
+    fun formatPart(value: Double): String {
         val halves = round(value * 2.0).toInt()
         val whole = halves / 2
         val hasHalf = halves % 2 != 0
@@ -163,6 +248,41 @@ object Proportions {
             else -> MINIMUM_UNIT // e.g. 1½, happens for ratios like 3 : 4
         }
         return Candidate(halves, error, rank)
+    }
+
+    /**
+     * Rounds [proportions] to ½ units so that they sum to about [totalHalves] halves, keeping
+     * every non-zero share at ½ at least. Returns an empty array when the result cannot be
+     * squeezed into [maxHalves].
+     */
+    private fun roundToHalves(
+        proportions: List<Double>,
+        totalHalves: Int,
+        maxHalves: Int,
+    ): IntArray {
+        val halves = IntArray(proportions.size) { index ->
+            if (proportions[index] > 0.0) max(1, round(proportions[index] * totalHalves).toInt()) else 0
+        }
+        var sum = halves.sum()
+        // Rounding several small shares up can overshoot the budget: shrink the biggest part.
+        while (sum > maxHalves) {
+            val largest = halves.indices.filter { halves[it] > 1 }.maxByOrNull { halves[it] }
+                ?: return IntArray(0)
+            halves[largest]--
+            sum--
+        }
+        return halves
+    }
+
+    /** Candidates by total, then element by element, so equally simple ones stay deterministic. */
+    private val CANDIDATE_ORDER: Comparator<List<Double>> = Comparator { first, second ->
+        val byTotal = first.sum().compareTo(second.sum())
+        if (byTotal != 0) return@Comparator byTotal
+        for (index in 0 until minOf(first.size, second.size)) {
+            val byValue = first[index].compareTo(second[index])
+            if (byValue != 0) return@Comparator byValue
+        }
+        first.size.compareTo(second.size)
     }
 
     private fun gcd(a: Int, b: Int): Int {

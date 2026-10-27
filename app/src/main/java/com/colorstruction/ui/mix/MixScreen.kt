@@ -5,10 +5,14 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Colorize
@@ -32,17 +36,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.colorstruction.R
 import com.colorstruction.color.Rgb
-import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /** SavedStateHandle key through which the picker returns the confirmed color. */
 const val PICKED_COLOR_KEY = "picked_color"
 
-/** Placeholder name of the virtual water component until recipe cards land. */
-private const val WATER_COMPONENT_NAME = "Water"
-
 /**
- * Mixing overview: target color, pick button and the current recipes.
+ * Mixing overview: target color, display controls and the recipe cards.
  *
  * @param onPickColor invoked with the current target color when the pick button is pressed
  * @param savedStateHandle handle of this destination, used to receive the picked color
@@ -69,59 +69,71 @@ fun MixScreen(
         }
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(
-            text = stringResource(R.string.target_color),
-            style = MaterialTheme.typography.titleLarge,
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(160.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color(target.toArgbInt()))
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                    shape = RoundedCornerShape(16.dp),
-                ),
-        )
-        Text(
-            text = Rgb.formatHex(target),
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.align(Alignment.Start),
-        )
-        Button(onClick = { onPickColor(target) }) {
-            Icon(imageVector = Icons.Filled.Colorize, contentDescription = null)
-            Text(
-                text = stringResource(R.string.pick_color),
-                modifier = Modifier.padding(start = 8.dp),
+        item { TargetSection(target, onPickColor) }
+        item {
+            MixControls(
+                ratioFormat = uiState.ratioFormat,
+                maxComponents = uiState.maxComponents,
+                onRatioFormatChange = viewModel::setRatioFormat,
+                onMaxComponentsChange = viewModel::setMaxComponents,
             )
         }
+        item { RecipesHeader(uiState.palette?.name) }
         if (uiState.isSolving) {
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            Text(text = stringResource(R.string.solving), style = MaterialTheme.typography.bodyMedium)
+            item {
+                LinearProgressIndicator(Modifier.fillMaxWidth())
+                Text(stringResource(R.string.solving), Modifier.padding(top = 4.dp), style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+        items(uiState.recipes) { recipe ->
+            RecipeCard(recipe = recipe, target = target, ratioFormat = uiState.ratioFormat)
         }
         if (uiState.paintCount == 0) {
-            Text(
-                text = stringResource(R.string.no_paints_in_palette),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        } else {
-            uiState.recipes.forEach { recipe ->
-                Text(text = recipe.summary(), style = MaterialTheme.typography.bodyMedium)
+            item {
+                Text(stringResource(R.string.no_paints_in_palette), style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
 }
 
-/** Temporary one-line recipe summary; part B replaces this with recipe cards. */
-private fun RecipeUi.summary(): String {
-    val names = recipe.components.joinToString(" + ") { it.paint?.name ?: WATER_COMPONENT_NAME }
-    return "$names — $proportionsText — ΔE " + String.format(Locale.ROOT, "%.1f", roundedDeltaE)
+/** Target swatch next to its hex value and the pick button. */
+@Composable
+private fun TargetSection(target: Rgb, onPickColor: (Rgb) -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            Modifier
+                .size(120.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color(target.toArgbInt()))
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp)),
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(R.string.target_color), style = MaterialTheme.typography.titleMedium)
+            Text(Rgb.formatHex(target), style = MaterialTheme.typography.headlineSmall)
+            Button(onClick = { onPickColor(target) }) {
+                Icon(imageVector = Icons.Filled.Colorize, contentDescription = null)
+                Text(stringResource(R.string.pick_color), Modifier.padding(start = 8.dp))
+            }
+        }
+    }
+}
+
+/** "Recipes" heading with the name of the palette the recipes come from. */
+@Composable
+private fun RecipesHeader(paletteName: String?) {
+    Column {
+        Text(stringResource(R.string.recipes), style = MaterialTheme.typography.titleMedium)
+        if (!paletteName.isNullOrEmpty()) {
+            Text(
+                text = stringResource(R.string.from_palette, paletteName),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
 }
