@@ -20,10 +20,15 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.NavType
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.colorstruction.R
+import com.colorstruction.color.Rgb
 import com.colorstruction.ui.mix.MixScreen
+import com.colorstruction.ui.mix.PICKED_COLOR_KEY
 import com.colorstruction.ui.paints.PaintsScreen
+import com.colorstruction.ui.picker.ColorPickerScreen
 import com.colorstruction.ui.settings.SettingsScreen
 
 private enum class TopLevelDestination(
@@ -36,15 +41,23 @@ private enum class TopLevelDestination(
     Settings("settings", R.string.nav_settings, Icons.Filled.Settings),
 }
 
+private const val PICKER_ROUTE = "picker"
+private const val PICKER_COLOR_ARG = "color"
+private const val PICKER_PATTERN = "$PICKER_ROUTE?$PICKER_COLOR_ARG={$PICKER_COLOR_ARG}"
+private const val DEFAULT_TARGET_ARGB: Int = 0xFF3D933E.toInt()
+
+/** Root navigation graph: three bottom tabs plus the full screen color picker. */
 @Composable
 fun ColorStructionRoot() {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
+    val showBottomBar = currentDestination?.route != PICKER_PATTERN
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            if (showBottomBar) {
+                NavigationBar {
                 TopLevelDestination.entries.forEach { destination ->
                     val selected = currentDestination
                         ?.hierarchy
@@ -70,6 +83,7 @@ fun ColorStructionRoot() {
                     )
                 }
             }
+            }
         },
     ) { innerPadding ->
         NavHost(
@@ -77,9 +91,37 @@ fun ColorStructionRoot() {
             startDestination = TopLevelDestination.Mix.route,
             modifier = Modifier.padding(innerPadding),
         ) {
-            composable(TopLevelDestination.Mix.route) { MixScreen() }
+            composable(TopLevelDestination.Mix.route) { entry ->
+                MixScreen(
+                    onPickColor = { rgb ->
+                        navController.navigate("$PICKER_ROUTE?$PICKER_COLOR_ARG=${rgb.toArgbInt()}")
+                    },
+                    savedStateHandle = entry.savedStateHandle,
+                )
+            }
             composable(TopLevelDestination.Paints.route) { PaintsScreen() }
             composable(TopLevelDestination.Settings.route) { SettingsScreen() }
+            composable(
+                route = PICKER_PATTERN,
+                arguments = listOf(
+                    navArgument(PICKER_COLOR_ARG) {
+                        type = NavType.IntType
+                        defaultValue = DEFAULT_TARGET_ARGB
+                    },
+                ),
+            ) { entry ->
+                val initialArgb = entry.arguments?.getInt(PICKER_COLOR_ARG) ?: DEFAULT_TARGET_ARGB
+                ColorPickerScreen(
+                    initialColor = Rgb.fromArgbInt(initialArgb),
+                    onConfirm = { rgb ->
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set(PICKED_COLOR_KEY, rgb.toArgbInt())
+                        navController.popBackStack()
+                    },
+                    onCancel = { navController.popBackStack() },
+                )
+            }
         }
     }
 }

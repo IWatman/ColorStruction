@@ -159,10 +159,10 @@ Each stage ends with a build (`./gradlew assembleDebug`) and a test run.
 - [x] DataStore for settings
 
 ### Stage 4. Color wheel (component `ui/picker/ColorWheel`)
-- [ ] Canvas: hue ring (sweep gradient), S/V square (two gradients)
-- [ ] Gestures: tap/drag on ring and square, markers, `HsvColor` state
-- [ ] HEX input and RGB sliders synced with the wheel
-- [ ] Accessibility: contentDescription, large touch targets
+- [x] Canvas: hue ring (sweep gradient), S/V square (two gradients)
+- [x] Gestures: tap/drag on ring and square, markers, `HsvColor` state
+- [x] HEX input and RGB sliders synced with the wheel
+- [x] Accessibility: contentDescription, large touch targets
 
 ### Stage 5. "My paints" screen
 - [ ] Palettes / paints lists, CRUD, active palette selection, palette type

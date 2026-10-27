@@ -14,4 +14,17 @@
 
     <string name="settings_title">Settings</string>
     <string name="settings_placeholder">App settings will appear here.</string>
+
+    <string name="picker_title">Pick color</string>
+    <string name="confirm">Confirm</string>
+    <string name="back">Back</string>
+    <string name="hex_label">HEX</string>
+    <string name="hex_error">Enter a color like #RRGGBB</string>
+    <string name="color_red">Red</string>
+    <string name="color_green">Green</string>
+    <string name="color_blue">Blue</string>
+    <string name="color_wheel_description">Hue ring and saturation/value square</string>
+    <string name="pick_color">Pick color</string>
+    <string name="target_color">Target color</string>
+    <string name="initial_color">Initial color</string>
 </resources>

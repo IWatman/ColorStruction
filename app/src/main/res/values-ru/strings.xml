@@ -14,4 +14,17 @@
 
     <string name="settings_title">Настройки</string>
     <string name="settings_placeholder">Здесь появятся настройки приложения.</string>
+
+    <string name="picker_title">Выбор цвета</string>
+    <string name="confirm">Готово</string>
+    <string name="back">Назад</string>
+    <string name="hex_label">HEX</string>
+    <string name="hex_error">Введите цвет в формате #RRGGBB</string>
+    <string name="color_red">Красный</string>
+    <string name="color_green">Зелёный</string>
+    <string name="color_blue">Синий</string>
+    <string name="color_wheel_description">Кольцо оттенков и квадрат насыщенности и яркости</string>
+    <string name="pick_color">Выбрать цвет</string>
+    <string name="target_color">Целевой цвет</string>
+    <string name="initial_color">Исходный цвет</string>
 </resources>
