@@ -13,6 +13,11 @@ class ColorStructionApp : Application() {
         super.onCreate()
         container = AppContainer(this)
 
+        // Silent check on launch; debug builds skip it to spare the GitHub rate limit.
+        if (!BuildConfig.DEBUG) {
+            container.updateManager.check()
+        }
+
         container.applicationScope.launch {
             val settingsRepository = container.settingsRepository
             val starterPaletteId = container.paintRepository.ensureStarterPalette()

@@ -35,6 +35,7 @@
     <string name="error_network">Нет подключения к интернету</string>
     <string name="error_rate_limited">Превышен лимит GitHub, попробуйте позже</string>
     <string name="error_no_apk">В релизе нет APK-файла</string>
+    <string name="error_no_release">Релизов пока нет</string>
     <string name="error_generic">Не удалось обновить: %1$s</string>
     <string name="settings_about">О приложении</string>
     <string name="about_model">Смешение рассчитывается спектральной моделью Кубелки–Мунка. Результаты приблизительные: реальные пигменты отличаются, поэтому при необходимости подстройте силу тона каждой краски.</string>

@@ -5,6 +5,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -15,7 +17,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -24,6 +28,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.NavType
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.colorstruction.ColorStructionApp
 import com.colorstruction.R
 import com.colorstruction.color.Rgb
 import com.colorstruction.ui.mix.MixScreen
@@ -32,6 +37,7 @@ import com.colorstruction.ui.paints.PaintEditorScreen
 import com.colorstruction.ui.paints.PaintsScreen
 import com.colorstruction.ui.picker.ColorPickerScreen
 import com.colorstruction.ui.settings.SettingsScreen
+import com.colorstruction.update.UpdateState
 
 private enum class TopLevelDestination(
     val route: String,
@@ -61,6 +67,8 @@ fun ColorStructionRoot() {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
+    val appContext = LocalContext.current.applicationContext as ColorStructionApp
+    val updateState by appContext.container.updateManager.state.collectAsStateWithLifecycle()
     val showBottomBar = currentDestination?.route != PICKER_PATTERN &&
         currentDestination?.route != PAINT_EDITOR_PATTERN
 
@@ -84,10 +92,23 @@ fun ColorStructionRoot() {
                             }
                         },
                         icon = {
-                            Icon(
-                                imageVector = destination.icon,
-                                contentDescription = null,
-                            )
+                            if (destination == TopLevelDestination.Settings) {
+                                BadgedBox(
+                                    badge = {
+                                        if (updateState is UpdateState.Available) Badge()
+                                    },
+                                ) {
+                                    Icon(
+                                        imageVector = destination.icon,
+                                        contentDescription = null,
+                                    )
+                                }
+                            } else {
+                                Icon(
+                                    imageVector = destination.icon,
+                                    contentDescription = null,
+                                )
+                            }
                         },
                         label = { Text(stringResource(destination.labelRes)) },
                     )

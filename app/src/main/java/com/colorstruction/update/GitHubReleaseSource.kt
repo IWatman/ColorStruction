@@ -60,7 +60,8 @@ class GitHubReleaseSource(
         when {
             status == HTTP_FORBIDDEN || status == HTTP_TOO_MANY_REQUESTS ->
                 throw UpdateError.RateLimited(connection.getHeaderField("Retry-After")?.toLongOrNull())
-            status != HTTP_OK -> throw UpdateError.Network("HTTP $status")
+            status == HTTP_NOT_FOUND -> throw UpdateError.NoRelease
+            status != HTTP_OK -> throw UpdateError.Http(status)
         }
     }
 
@@ -71,6 +72,7 @@ class GitHubReleaseSource(
         private const val TIMEOUT_MS = 10_000
         private const val HTTP_OK = 200
         private const val HTTP_FORBIDDEN = 403
+        private const val HTTP_NOT_FOUND = 404
         private const val HTTP_TOO_MANY_REQUESTS = 429
     }
 }

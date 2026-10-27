@@ -8,9 +8,15 @@ package com.colorstruction.update
  */
 sealed class UpdateError(message: String, cause: Throwable? = null) : Exception(message, cause) {
 
-    /** Connection problem, timeout, DNS failure or an unexpected HTTP status. */
+    /** Connection problem, timeout or DNS failure. */
     class Network(detail: String? = null, cause: Throwable? = null) :
         UpdateError("network: ${detail ?: cause?.message ?: "unknown"}", cause)
+
+    /** No release has been published yet (HTTP 404 from `releases/latest`). */
+    data object NoRelease : UpdateError("no release published")
+
+    /** The server answered with an unexpected HTTP status. */
+    class Http(val status: Int) : UpdateError("HTTP $status")
 
     /** GitHub API rate limit (HTTP 403/429). [retryAfterSeconds] comes from `Retry-After`. */
     class RateLimited(val retryAfterSeconds: Long? = null) :

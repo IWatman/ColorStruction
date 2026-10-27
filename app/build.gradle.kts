@@ -1,4 +1,22 @@
+import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+// Version comes from one place; `-PappVersion=0.0.9` overrides it (used to test updates).
+val appVersion: String = (findProperty("appVersion") as String?) ?: "0.1.0"
+
+/** 0.1.0 -> 100, 1.2.3 -> 10203: newer versions always get a larger versionCode. */
+fun versionCodeOf(version: String): Int {
+    val (major, minor, patch) = version.split(".").map { it.takeWhile(Char::isDigit).toInt() }
+    return major * 10_000 + minor * 100 + patch
+}
+
+// Release signing: keystore.properties outside the repo (path overridable via env, e.g. in CI).
+val keystoreProperties = Properties().apply {
+    val path = System.getenv("COLORSTRUCTION_KEYSTORE_PROPERTIES")
+        ?: "${System.getProperty("user.home")}/.colorstruction/keystore.properties"
+    val file = File(path)
+    if (file.isFile) file.inputStream().use { load(it) }
+}
 
 plugins {
     alias(libs.plugins.android.application)
@@ -15,14 +33,26 @@ android {
         applicationId = "com.colorstruction"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = versionCodeOf(appVersion)
+        versionName = appVersion
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (keystoreProperties.isNotEmpty()) {
+            create("release") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
