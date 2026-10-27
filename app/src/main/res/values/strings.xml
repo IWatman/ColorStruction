@@ -27,4 +27,26 @@
     <string name="pick_color">Pick color</string>
     <string name="target_color">Target color</string>
     <string name="initial_color">Initial color</string>
+
+    <string name="palette">Palette</string>
+    <string name="new_palette">New palette</string>
+    <string name="rename_palette">Rename palette</string>
+    <string name="delete_palette">Delete palette</string>
+    <string name="delete_palette_confirm">The palette %1$s and all its paints will be deleted.</string>
+    <string name="palette_type">Palette type</string>
+    <string name="palette_type_opaque">Opaque</string>
+    <string name="palette_type_watercolor">Watercolor</string>
+    <string name="palette_name">Palette name</string>
+    <string name="create">Create</string>
+    <string name="rename">Rename</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="add_paint">Add paint</string>
+    <string name="delete_paint">Delete paint</string>
+    <string name="paint_deleted">%1$s deleted</string>
+    <string name="undo">Undo</string>
+    <string name="no_paints">This palette has no paints yet. Tap + to add one.</string>
+    <string name="move_up">Move up</string>
+    <string name="move_down">Move down</string>
+    <string name="more_options">More options</string>
 </resources>

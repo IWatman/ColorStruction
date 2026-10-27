@@ -27,4 +27,26 @@
     <string name="pick_color">Выбрать цвет</string>
     <string name="target_color">Целевой цвет</string>
     <string name="initial_color">Исходный цвет</string>
+
+    <string name="palette">Палитра</string>
+    <string name="new_palette">Новая палитра</string>
+    <string name="rename_palette">Переименовать палитру</string>
+    <string name="delete_palette">Удалить палитру</string>
+    <string name="delete_palette_confirm">Палитра %1$s и все её краски будут удалены.</string>
+    <string name="palette_type">Тип палитры</string>
+    <string name="palette_type_opaque">Кроющая</string>
+    <string name="palette_type_watercolor">Акварель</string>
+    <string name="palette_name">Название палитры</string>
+    <string name="create">Создать</string>
+    <string name="rename">Переименовать</string>
+    <string name="delete">Удалить</string>
+    <string name="cancel">Отмена</string>
+    <string name="add_paint">Добавить краску</string>
+    <string name="delete_paint">Удалить краску</string>
+    <string name="paint_deleted">Краска %1$s удалена</string>
+    <string name="undo">Отменить</string>
+    <string name="no_paints">В этой палитре пока нет красок. Нажмите +, чтобы добавить.</string>
+    <string name="move_up">Переместить вверх</string>
+    <string name="move_down">Переместить вниз</string>
+    <string name="more_options">Ещё</string>
 </resources>

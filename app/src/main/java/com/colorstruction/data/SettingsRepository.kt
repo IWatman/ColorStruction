@@ -43,6 +43,20 @@ data class AppSettings(
 }
 
 /**
+ * The part of settings storage the UI depends on: a settings stream and the active palette.
+ *
+ * View models and tests use this interface so they do not need a real DataStore.
+ */
+interface SettingsStore {
+
+    /** The current settings, re-emitted after every change. */
+    val settings: Flow<AppSettings>
+
+    /** Makes [paletteId] the active palette, or clears the selection with `null`. */
+    suspend fun setActivePalette(paletteId: Long?)
+}
+
+/**
  * DataStore-backed settings storage.
  *
  * Reads are exposed as a [Flow] that emits the current values immediately and again after
@@ -51,13 +65,13 @@ data class AppSettings(
  *
  * @param dataStore the preferences store to read and write; tests pass a temporary file.
  */
-class SettingsRepository(private val dataStore: DataStore<Preferences>) {
+class SettingsRepository(private val dataStore: DataStore<Preferences>) : SettingsStore {
 
     /** The current settings, re-emitted after every change. */
-    val settings: Flow<AppSettings> = dataStore.data.map { it.toAppSettings() }
+    override val settings: Flow<AppSettings> = dataStore.data.map { it.toAppSettings() }
 
     /** Makes [paletteId] the active palette, or clears the selection with `null`. */
-    suspend fun setActivePalette(paletteId: Long?) {
+    override suspend fun setActivePalette(paletteId: Long?) {
         dataStore.edit { preferences ->
             if (paletteId == null) {
                 preferences.remove(KEY_ACTIVE_PALETTE_ID)
