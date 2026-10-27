@@ -5,6 +5,10 @@ import com.colorstruction.data.ColorStructionDatabase
 import com.colorstruction.data.PaintRepository
 import com.colorstruction.data.RoomPaintRepository
 import com.colorstruction.data.SettingsRepository
+import com.colorstruction.update.GitHubReleaseSource
+import com.colorstruction.update.HttpApkDownloader
+import com.colorstruction.update.SystemApkInstaller
+import com.colorstruction.update.UpdateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -30,4 +34,13 @@ class AppContainer(context: Context) {
 
     /** User settings stored in DataStore. */
     val settingsRepository: SettingsRepository = SettingsRepository.fromContext(appContext)
+
+    /** GitHub Releases updater: version check, APK download and the install session. */
+    val updateManager: UpdateManager = UpdateManager(
+        currentVersionName = BuildConfig.VERSION_NAME,
+        releaseSource = GitHubReleaseSource(),
+        downloader = HttpApkDownloader(appContext.cacheDir),
+        installer = SystemApkInstaller(appContext),
+        scope = applicationScope,
+    )
 }

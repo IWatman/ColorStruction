@@ -16,4 +16,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        // Unsticks the updater after the install dialog, a dead session or a granted permission.
+        (application as ColorStructionApp).container.updateManager.onAppResumed()
+    }
 }
