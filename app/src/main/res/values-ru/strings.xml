@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ColorStruction</string>
+
+    <string name="nav_mix">Смешивание</string>
+    <string name="nav_paints">Мои краски</string>
+    <string name="nav_settings">Настройки</string>
+
+    <string name="mix_title">Смешивание</string>
+    <string name="mix_placeholder">Здесь появятся целевой цвет и рецепты смешивания.</string>
+
+    <string name="paints_title">Мои краски</string>
+    <string name="paints_placeholder">Здесь появятся ваши палитры и краски.</string>
+
+    <string name="settings_title">Настройки</string>
+    <string name="settings_placeholder">Здесь появятся настройки приложения.</string>
+</resources>
