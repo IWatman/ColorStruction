@@ -109,13 +109,7 @@ class PaintsViewModel(
         lastDeleted = null
         viewModelScope.launch {
             val paint = deleted.paint
-            val newId = paintRepository.addPaint(
-                paletteId = paint.paletteId,
-                name = paint.name,
-                color = paint.color,
-                tintingStrength = paint.tintingStrength,
-                note = paint.note,
-            )
+            val newId = paintRepository.restorePaint(paint)
             val restored = deleted.order.map { if (it == paint.id) newId else it }
             paintRepository.reorderPaints(paint.paletteId, restored)
         }

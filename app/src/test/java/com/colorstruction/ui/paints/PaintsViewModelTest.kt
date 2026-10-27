@@ -116,6 +116,7 @@ class PaintsViewModelTest {
 
         val paints = viewModel.uiState.value.paints
         assertEquals(listOf("Red", "Blue", "Green"), paints.map { it.name })
+        assertEquals(listOf(0, 1, 2), paints.map { it.sortOrder })
         assertEquals("note", paints[1].note)
         assertEquals(1.5, paints[1].tintingStrength, 0.0001)
     }

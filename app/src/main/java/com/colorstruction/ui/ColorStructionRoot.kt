@@ -12,6 +12,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -27,6 +28,7 @@ import com.colorstruction.R
 import com.colorstruction.color.Rgb
 import com.colorstruction.ui.mix.MixScreen
 import com.colorstruction.ui.mix.PICKED_COLOR_KEY
+import com.colorstruction.ui.paints.PaintEditorScreen
 import com.colorstruction.ui.paints.PaintsScreen
 import com.colorstruction.ui.picker.ColorPickerScreen
 import com.colorstruction.ui.settings.SettingsScreen
@@ -46,13 +48,21 @@ private const val PICKER_COLOR_ARG = "color"
 private const val PICKER_PATTERN = "$PICKER_ROUTE?$PICKER_COLOR_ARG={$PICKER_COLOR_ARG}"
 private const val DEFAULT_TARGET_ARGB: Int = 0xFF3D933E.toInt()
 
-/** Root navigation graph: three bottom tabs plus the full screen color picker. */
+private const val PAINT_EDITOR_ROUTE = "paintEditor"
+private const val PALETTE_ID_ARG = "paletteId"
+private const val PAINT_ID_ARG = "paintId"
+private const val PAINT_EDITOR_PATTERN =
+    "$PAINT_EDITOR_ROUTE?$PALETTE_ID_ARG={$PALETTE_ID_ARG}&$PAINT_ID_ARG={$PAINT_ID_ARG}"
+private const val NEW_PAINT_ID = -1L
+
+/** Root navigation graph: three bottom tabs plus the color picker and the paint editor. */
 @Composable
 fun ColorStructionRoot() {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
-    val showBottomBar = currentDestination?.route != PICKER_PATTERN
+    val showBottomBar = currentDestination?.route != PICKER_PATTERN &&
+        currentDestination?.route != PAINT_EDITOR_PATTERN
 
     Scaffold(
         bottomBar = {
@@ -99,8 +109,50 @@ fun ColorStructionRoot() {
                     savedStateHandle = entry.savedStateHandle,
                 )
             }
-            composable(TopLevelDestination.Paints.route) { PaintsScreen() }
+            composable(TopLevelDestination.Paints.route) {
+                PaintsScreen(
+                    onAddPaint = { paletteId ->
+                        navController.navigate(
+                            "$PAINT_EDITOR_ROUTE?$PALETTE_ID_ARG=$paletteId" +
+                                "&$PAINT_ID_ARG=$NEW_PAINT_ID",
+                        )
+                    },
+                    onEditPaint = { paletteId, paintId ->
+                        navController.navigate(
+                            "$PAINT_EDITOR_ROUTE?$PALETTE_ID_ARG=$paletteId" +
+                                "&$PAINT_ID_ARG=$paintId",
+                        )
+                    },
+                )
+            }
             composable(TopLevelDestination.Settings.route) { SettingsScreen() }
+            composable(
+                route = PAINT_EDITOR_PATTERN,
+                arguments = listOf(
+                    navArgument(PALETTE_ID_ARG) {
+                        type = NavType.LongType
+                        defaultValue = NEW_PAINT_ID
+                    },
+                    navArgument(PAINT_ID_ARG) {
+                        type = NavType.LongType
+                        defaultValue = NEW_PAINT_ID
+                    },
+                ),
+            ) { entry ->
+                val savedStateHandle = entry.savedStateHandle
+                val pickedFlow = remember(entry) {
+                    savedStateHandle.getStateFlow<Int?>(PICKED_COLOR_KEY, null)
+                }
+                PaintEditorScreen(
+                    onBack = { navController.popBackStack() },
+                    onSaved = { navController.popBackStack() },
+                    onPickColor = { rgb ->
+                        navController.navigate("$PICKER_ROUTE?$PICKER_COLOR_ARG=${rgb.toArgbInt()}")
+                    },
+                    pickedColor = pickedFlow,
+                    onClearPickedColor = { savedStateHandle[PICKED_COLOR_KEY] = null },
+                )
+            }
             composable(
                 route = PICKER_PATTERN,
                 arguments = listOf(

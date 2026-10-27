@@ -49,4 +49,13 @@
     <string name="move_up">Move up</string>
     <string name="move_down">Move down</string>
     <string name="more_options">More options</string>
+
+    <string name="new_paint">New paint</string>
+    <string name="edit_paint">Edit paint</string>
+    <string name="paint_name">Paint name</string>
+    <string name="change_color">Change color</string>
+    <string name="tinting_strength">Tinting strength</string>
+    <string name="tinting_strength_hint">How strongly this paint tints a mix. Increase if it dominates mixes more than predicted.</string>
+    <string name="note">Note</string>
+    <string name="save">Save</string>
 </resources>

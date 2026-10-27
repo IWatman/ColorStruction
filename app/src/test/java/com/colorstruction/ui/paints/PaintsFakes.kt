@@ -73,8 +73,16 @@ internal class FakePaintRepository(
         return id
     }
 
+    override suspend fun getPaint(id: Long): Paint? = paintsState.value.firstOrNull { it.id == id }
+
     override suspend fun updatePaint(paint: Paint) {
         paintsState.value = paintsState.value.map { if (it.id == paint.id) paint else it }
+    }
+
+    override suspend fun restorePaint(paint: Paint): Long {
+        val id = nextPaintId++
+        paintsState.value += paint.copy(id = id)
+        return id
     }
 
     override suspend fun deletePaint(id: Long) {

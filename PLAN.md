@@ -165,8 +165,8 @@ Each stage ends with a build (`./gradlew assembleDebug`) and a test run.
 - [x] Accessibility: contentDescription, large touch targets
 
 ### Stage 5. "My paints" screen
-- [ ] Palettes / paints lists, CRUD, active palette selection, palette type
-- [ ] Add-paint dialog: custom name, color (wheel/HEX/eyedropper), tinting strength
+- [x] Palettes / paints lists, CRUD, active palette selection, palette type
+- [x] Add-paint dialog: custom name, color (wheel/HEX/eyedropper), tinting strength
 
 ### Stage 6. Home screen + recipes
 - [ ] ViewModel: target → solver (debounce, cancellation) → recipe list

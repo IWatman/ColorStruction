@@ -49,4 +49,13 @@
     <string name="move_up">Переместить вверх</string>
     <string name="move_down">Переместить вниз</string>
     <string name="more_options">Ещё</string>
+
+    <string name="new_paint">Новая краска</string>
+    <string name="edit_paint">Изменить краску</string>
+    <string name="paint_name">Название краски</string>
+    <string name="change_color">Изменить цвет</string>
+    <string name="tinting_strength">Сила тонирования</string>
+    <string name="tinting_strength_hint">Насколько сильно эта краска тонирует смесь. Увеличьте, если она влияет на смеси больше, чем предсказано.</string>
+    <string name="note">Заметка</string>
+    <string name="save">Сохранить</string>
 </resources>

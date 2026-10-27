@@ -46,8 +46,17 @@ interface PaintRepository {
         note: String? = null,
     ): Long
 
+    /** Reads one paint by its [id], or `null` when it no longer exists. */
+    suspend fun getPaint(id: Long): Paint?
+
     /** Stores the given paint's fields, matched by [Paint.id]. */
     suspend fun updatePaint(paint: Paint)
+
+    /**
+     * Re-inserts [paint] keeping every field, including [Paint.sortOrder], so a paint that was
+     * deleted can be brought back at its original position. Returns the new id.
+     */
+    suspend fun restorePaint(paint: Paint): Long
 
     /** Deletes a paint. */
     suspend fun deletePaint(id: Long)
@@ -126,9 +135,14 @@ class RoomPaintRepository(
         )
     }
 
+    override suspend fun getPaint(id: Long): Paint? = paintDao.getById(id)?.toDomain()
+
     override suspend fun updatePaint(paint: Paint) {
         paintDao.update(paint.toEntity())
     }
+
+    override suspend fun restorePaint(paint: Paint): Long =
+        paintDao.insert(paint.toEntity().copy(id = 0L))
 
     override suspend fun deletePaint(id: Long) {
         paintDao.deleteById(id)
