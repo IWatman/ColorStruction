@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
@@ -34,6 +35,7 @@ import com.colorstruction.ColorStructionApp
 import com.colorstruction.R
 import com.colorstruction.color.Rgb
 import com.colorstruction.ui.eyedropper.EyedropperScreen
+import com.colorstruction.ui.favorites.FavoritesScreen
 import com.colorstruction.ui.mix.MixScreen
 import com.colorstruction.ui.mix.PICKED_COLOR_KEY
 import com.colorstruction.ui.paints.PaintEditorScreen
@@ -49,6 +51,7 @@ private enum class TopLevelDestination(
 ) {
     Mix("mix", R.string.nav_mix, Icons.Filled.Science),
     Paints("paints", R.string.nav_paints, Icons.Filled.Palette),
+    Favorites("favorites", R.string.nav_favorites, Icons.Filled.Star),
     Settings("settings", R.string.nav_settings, Icons.Filled.Settings),
 }
 
@@ -157,6 +160,21 @@ fun ColorStructionRoot() {
                             "$PAINT_EDITOR_ROUTE?$PALETTE_ID_ARG=$paletteId" +
                                 "&$PAINT_ID_ARG=$paintId",
                         )
+                    },
+                )
+            }
+            composable(TopLevelDestination.Favorites.route) {
+                FavoritesScreen(
+                    onOpen = { argb ->
+                        navController.getBackStackEntry(TopLevelDestination.Mix.route)
+                            .savedStateHandle[PICKED_COLOR_KEY] = argb
+                        navController.navigate(TopLevelDestination.Mix.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     },
                 )
             }

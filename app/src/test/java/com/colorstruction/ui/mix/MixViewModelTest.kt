@@ -7,11 +7,13 @@ import com.colorstruction.data.Paint
 import com.colorstruction.data.Palette
 import com.colorstruction.data.RatioFormat
 import com.colorstruction.mixing.PaletteType
+import com.colorstruction.ui.paints.FakeFavoriteRepository
 import com.colorstruction.ui.paints.FakePaintRepository
 import com.colorstruction.ui.paints.FakeSettingsStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -60,10 +62,12 @@ class MixViewModelTest {
     private fun createViewModel(
         repository: FakePaintRepository,
         settings: FakeSettingsStore = FakeSettingsStore(AppSettings(activePaletteId = 1L)),
+        favorites: FakeFavoriteRepository = FakeFavoriteRepository(),
     ): MixViewModel = MixViewModel(
         savedStateHandle = SavedStateHandle(),
         paintRepository = repository,
         settings = settings,
+        favoriteRepository = favorites,
         solverDispatcher = dispatcher,
     )
 
@@ -173,6 +177,34 @@ class MixViewModelTest {
         )
     }
 
+    @Test
+    fun saveFavoriteStoresDisplayedWeightsAndMarksTheRecipeSaved() = runTest(dispatcher) {
+        val favorites = FakeFavoriteRepository()
+        val viewModel = observe(createViewModel(filledRepository(), favorites = favorites))
+        viewModel.setTarget(oliveTarget)
+        advanceUntilIdle()
+
+        val recipe = viewModel.uiState.value.recipes.first()
+        viewModel.saveFavorite(recipe)
+        advanceUntilIdle()
+
+        val saved = favorites.favorites().first().single()
+        assertEquals(oliveTarget.toArgbInt(), saved.target.toArgbInt())
+        assertEquals("Opaque", saved.paletteName)
+        val total = recipe.displayWeights.sum().let { if (it > 0.0) it else 1.0 }
+        assertEquals(recipe.displayWeights.size, saved.components.size)
+        recipe.displayWeights.forEachIndexed { index, weight ->
+            assertEquals(weight / total, saved.components[index].weight, 1e-9)
+        }
+        assertEquals(recipe.roundedDeltaE, saved.deltaE, 1e-9)
+        assertEquals(recipe.favoriteKey, saved.favoriteKey())
+        assertTrue(recipe.favoriteKey in viewModel.uiState.value.savedRecipeKeys)
+
+        // Saving the same recipe twice does not create a duplicate.
+        viewModel.saveFavorite(recipe)
+        advanceUntilIdle()
+        assertEquals(1, favorites.favorites().first().size)
+    }
+
     private fun RecipeUi.singlePaintName(): String? =
-        recipe.components.single().paint?.name
-}
+        recipe.components.single().paint?.name}

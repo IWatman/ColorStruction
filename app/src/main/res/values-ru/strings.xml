@@ -4,7 +4,14 @@
 
     <string name="nav_mix">Смешивание</string>
     <string name="nav_paints">Мои краски</string>
+    <string name="nav_favorites">Избранное</string>
     <string name="nav_settings">Настройки</string>
+
+    <string name="save_favorite">Сохранить рецепт</string>
+    <string name="saved_favorite">Сохранено</string>
+    <string name="no_favorites">Сохранённых рецептов пока нет. Нажмите ☆ на рецепте, чтобы сохранить его.</string>
+    <string name="favorite_deleted">Рецепт удалён</string>
+    <string name="delete_favorite">Удалить рецепт</string>
 
     <string name="mix_title">Смешивание</string>
     <string name="mix_placeholder">Здесь появятся целевой цвет и рецепты смешивания.</string>

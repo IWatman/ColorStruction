@@ -32,6 +32,7 @@ class MixViewModel(
     private val savedStateHandle: SavedStateHandle,
     private val paintRepository: PaintRepository,
     private val settings: SettingsStore,
+    private val favoriteRepository: FavoriteRepository,
     private val solverDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
 
@@ -112,9 +113,18 @@ class MixViewModel(
         .map { it.recentColors }
         .distinctUntilChanged()
 
+    /** Keys of the recipes that are already stored as favorites. */
+    private val savedRecipeKeys: Flow<Set<String>> = favoriteRepository.favorites()
+        .map { favorites -> favorites.map { it.favoriteKey() }.toSet() }
+        .distinctUntilChanged()
+
     /** Current screen state, refreshed after every change that affects the recipes. */
-    val uiState: StateFlow<MixUiState> = combine(solved, recentColors) { state, recents ->
-        state.copy(recentColors = recents)
+    val uiState: StateFlow<MixUiState> = combine(
+        solved,
+        recentColors,
+        savedRecipeKeys,
+    ) { state, recents, keys ->
+        state.copy(recentColors = recents, savedRecipeKeys = keys)
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
@@ -137,6 +147,25 @@ class MixViewModel(
     /** Sets how proportions are displayed. */
     fun setRatioFormat(format: RatioFormat) {
         viewModelScope.launch { settings.setRatioFormat(format) }
+    }
+
+    /**
+     * Stores [recipe] as a favorite with the shares that are displayed, for the current target.
+     * Saving the same recipe twice is a no-op.
+     */
+    fun saveFavorite(recipe: RecipeUi) {
+        if (recipe.favoriteKey in uiState.value.savedRecipeKeys) return
+        val target = _target.value
+        val paletteName = uiState.value.palette?.name.orEmpty()
+        val total = recipe.displayWeights.sum().let { if (it > 0.0) it else 1.0 }
+        val snapshot = recipe.recipe.copy(
+            components = recipe.recipe.components.mapIndexed { index, component ->
+                component.copy(weight = recipe.displayWeights.getOrElse(index) { 0.0 } / total)
+            },
+            result = recipe.roundedResult,
+            deltaE = recipe.roundedDeltaE,
+        ).toFavorite(target = target, paletteName = paletteName)
+        viewModelScope.launch { favoriteRepository.add(snapshot) }
     }
 
     private fun solve(
@@ -165,6 +194,7 @@ class MixViewModel(
                     savedStateHandle = createSavedStateHandle(),
                     paintRepository = app.container.paintRepository,
                     settings = app.container.settingsRepository,
+                    favoriteRepository = app.container.favoriteRepository,
                 )
             }
         }

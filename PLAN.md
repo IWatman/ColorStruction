@@ -183,12 +183,12 @@ Each stage ends with a build (`./gradlew assembleDebug`) and a test run.
 - [x] Language switching (System / ru / en), verify every screen in both languages
 - [x] Update checker: GitHub API, version comparison, download, install
 - [x] Release signing key (outside the repo)
-- [ ] GitHub Secrets for CI signing
-- [ ] GitHub Actions: build + tests on push; on tag `v*` — signed release APK attached to a GitHub Release
+- [x] GitHub Secrets for CI signing
+- [x] GitHub Actions: build + tests on push; on tag `v*` — signed release APK attached to a GitHub Release
 
 ### Stage 9. Polish
-- [ ] Dark theme
-- [ ] App icon, recent colors and favorite recipes
+- [x] Dark theme (system / light / dark setting)
+- [x] App icon, recent colors and favorite recipes (DB v2 migration verified 0.3.0 → 0.4.0)
 - [ ] First public release `v1.0.0`
 - [x] `v0.1.0` released; in-app update verified on the emulator (0.0.9 → 0.1.0, cancel and back-dismiss do not leave the progress stuck)
 

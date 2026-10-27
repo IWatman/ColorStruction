@@ -105,7 +105,13 @@ fun MixScreen(
             }
         }
         items(uiState.recipes) { recipe ->
-            RecipeCard(recipe = recipe, target = target, ratioFormat = uiState.ratioFormat)
+            RecipeCard(
+                recipe = recipe,
+                target = target,
+                ratioFormat = uiState.ratioFormat,
+                isSaved = recipe.favoriteKey in uiState.savedRecipeKeys,
+                onSave = { viewModel.saveFavorite(recipe) },
+            )
         }
         if (uiState.paintCount == 0) {
             item {

@@ -12,7 +12,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -44,17 +49,21 @@ private val SwatchShape = RoundedCornerShape(6.dp)
  * @param recipe the recipe together with the rounded shares that are displayed.
  * @param target the color the recipe was solved for, shown next to the result.
  * @param ratioFormat how the per-component share is rendered (parts or percent).
+ * @param isSaved whether this exact recipe is already stored as a favorite.
+ * @param onSave invoked when the star is tapped on a recipe that is not saved yet.
  */
 @Composable
 fun RecipeCard(
     recipe: RecipeUi,
     target: Rgb,
     ratioFormat: RatioFormat,
+    isSaved: Boolean,
+    onSave: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Header(recipe, target)
+            Header(recipe, target, isSaved, onSave)
             recipe.recipe.components.forEachIndexed { index, component ->
                 ComponentRow(component, recipe.displayWeights.getOrElse(index) { 0.0 }, ratioFormat)
             }
@@ -63,9 +72,14 @@ fun RecipeCard(
     }
 }
 
-/** Side-by-side target and result swatches with the accuracy badge and the ΔE value. */
+/** Side-by-side target and result swatches, the accuracy badge, ΔE and the save star. */
 @Composable
-private fun Header(recipe: RecipeUi, target: Rgb) {
+private fun Header(
+    recipe: RecipeUi,
+    target: Rgb,
+    isSaved: Boolean,
+    onSave: () -> Unit,
+) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Row(Modifier.fillMaxWidth().height(40.dp).clip(RoundedCornerShape(8.dp))) {
@@ -84,6 +98,15 @@ private fun Header(recipe: RecipeUi, target: Rgb) {
             val style = MaterialTheme.typography.labelSmall
             val color = MaterialTheme.colorScheme.onSurfaceVariant
             Text(stringResource(R.string.delta_e, recipe.roundedDeltaE), style = style, color = color)
+        }
+        IconButton(onClick = onSave, enabled = !isSaved) {
+            Icon(
+                imageVector = if (isSaved) Icons.Filled.Star else Icons.Outlined.StarBorder,
+                contentDescription = stringResource(
+                    if (isSaved) R.string.saved_favorite else R.string.save_favorite,
+                ),
+                tint = if (isSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

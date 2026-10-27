@@ -4,7 +4,14 @@
 
     <string name="nav_mix">Mix</string>
     <string name="nav_paints">My paints</string>
+    <string name="nav_favorites">Favorites</string>
     <string name="nav_settings">Settings</string>
+
+    <string name="save_favorite">Save recipe</string>
+    <string name="saved_favorite">Saved</string>
+    <string name="no_favorites">No saved recipes yet. Tap ☆ on a recipe to save it.</string>
+    <string name="favorite_deleted">Recipe deleted</string>
+    <string name="delete_favorite">Delete recipe</string>
 
     <string name="mix_title">Mix</string>
     <string name="mix_placeholder">The target color and mixing recipes will appear here.</string>

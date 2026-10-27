@@ -17,6 +17,7 @@ import com.colorstruction.mixing.accuracyOf
  * @property proportionsText those shares as text, in component order.
  * @property roundedResult color of the mix with the rounded shares.
  * @property roundedDeltaE color difference of [roundedResult] to the target.
+ * @property favoriteKey identity used to tell whether this exact recipe is already saved.
  */
 data class RecipeUi(
     val recipe: Recipe,
@@ -25,6 +26,7 @@ data class RecipeUi(
     val roundedResult: Rgb,
     val roundedDeltaE: Double,
     val accuracy: Accuracy,
+    val favoriteKey: String,
 )
 
 /** Snapshot of the mix screen: target, palette summary and the solved recipes. */
@@ -37,6 +39,7 @@ data class MixUiState(
     val isSolving: Boolean = false,
     val recipes: List<RecipeUi> = emptyList(),
     val recentColors: List<Int> = emptyList(),
+    val savedRecipeKeys: Set<String> = emptySet(),
 )
 
 /** Rounds [recipe]'s weights into display proportions and re-evaluates the mix with them. */
@@ -72,5 +75,10 @@ fun recipeUi(
         roundedResult = rounded.result,
         roundedDeltaE = rounded.deltaE,
         accuracy = accuracyOf(rounded.deltaE),
+        favoriteKey = favoriteKey(
+            targetArgb = target.toArgbInt(),
+            paintNames = recipe.components.map { it.paint?.name.orEmpty() },
+            weights = displayWeights,
+        ),
     )
 }

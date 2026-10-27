@@ -2,6 +2,8 @@ package com.colorstruction.ui.paints
 
 import com.colorstruction.color.Rgb
 import com.colorstruction.data.AppSettings
+import com.colorstruction.data.FavoriteRecipe
+import com.colorstruction.data.FavoriteRepository
 import com.colorstruction.data.Paint
 import com.colorstruction.data.PaintRepository
 import com.colorstruction.data.Palette
@@ -109,8 +111,28 @@ internal class FakePaintRepository(
             ?: createPalette("Starter", PaletteType.OPAQUE)
 }
 
-/** In-memory [SettingsStore] for view model tests. */
-internal class FakeSettingsStore(initial: AppSettings = AppSettings()) : SettingsStore {
+/** In-memory [FavoriteRepository] for view model tests. */
+internal class FakeFavoriteRepository(initial: List<FavoriteRecipe> = emptyList()) : FavoriteRepository {
+
+    private val state = MutableStateFlow(initial)
+    private var nextId = (initial.maxOfOrNull { it.id } ?: 0L) + 1
+
+    override fun favorites(): Flow<List<FavoriteRecipe>> = state
+
+    override suspend fun add(favorite: FavoriteRecipe): Long {
+        val id = nextId++
+        state.value = listOf(favorite.copy(id = id)) + state.value
+        return id
+    }
+
+    override suspend fun delete(id: Long) {
+        state.value = state.value.filterNot { it.id == id }
+    }
+
+    override suspend fun count(): Int = state.value.size
+}
+
+/** In-memory [SettingsStore] for view model tests. */internal class FakeSettingsStore(initial: AppSettings = AppSettings()) : SettingsStore {
 
     private val state = MutableStateFlow(initial)
 
