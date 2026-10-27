@@ -46,4 +46,4 @@ hsperfdata_*/
 
 # Test runtime leftovers (Robolectric / sqlite-jdbc)
 robolectric-*/
-sqlite-*.dll
+sqlite-*.dll*
