@@ -43,6 +43,13 @@
     <string name="third_party_notices">Использует spectral.js (лицензия MIT)</string>
 
     <string name="picker_title">Выбор цвета</string>
+    <string name="eyedropper_title">Пипетка</string>
+    <string name="eyedropper_loading">Загружаю изображение…</string>
+    <string name="eyedropper_error">Не удалось открыть изображение</string>
+    <string name="sample_size">Область</string>
+    <string name="sample_1px">1 пикс.</string>
+    <string name="sample_3">3×3</string>
+    <string name="sample_5">5×5</string>
     <string name="confirm">Готово</string>
     <string name="back">Назад</string>
     <string name="hex_label">HEX</string>

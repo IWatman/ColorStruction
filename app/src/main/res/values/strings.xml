@@ -45,6 +45,13 @@
     <string name="third_party_notices">Uses spectral.js (MIT license)</string>
 
     <string name="picker_title">Pick color</string>
+    <string name="eyedropper_title">Pick from image</string>
+    <string name="eyedropper_loading">Loading image…</string>
+    <string name="eyedropper_error">Can\'t open this image</string>
+    <string name="sample_size">Sample</string>
+    <string name="sample_1px">1 px</string>
+    <string name="sample_3">3×3</string>
+    <string name="sample_5">5×5</string>
     <string name="confirm">Confirm</string>
     <string name="back">Back</string>
     <string name="hex_label">HEX</string>
