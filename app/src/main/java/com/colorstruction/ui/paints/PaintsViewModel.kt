@@ -10,18 +10,30 @@ import com.colorstruction.ColorStructionApp
 import com.colorstruction.data.Paint
 import com.colorstruction.data.PaintRepository
 import com.colorstruction.data.Palette
+import com.colorstruction.data.PaletteFileCodec
+import com.colorstruction.data.PaletteFileException
+import com.colorstruction.data.PaletteTransfer
 import com.colorstruction.data.SettingsStore
 import com.colorstruction.data.resolveActivePalette
+import com.colorstruction.data.suggestedFileName
 import com.colorstruction.mixing.PaletteType
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** Snapshot of the "My paints" screen. */
 data class PaintsUiState(
@@ -30,16 +42,37 @@ data class PaintsUiState(
     val paints: List<Paint> = emptyList(),
 )
 
+/** One-off message of the "My paints" screen. */
+sealed interface PaintsEvent {
+    /** A palette file became the new active palette [name] holding [paintCount] paints. */
+    data class Imported(val name: String, val paintCount: Int) : PaintsEvent
+
+    /** A palette file was rejected for [reason]. */
+    data class ImportFailed(val reason: PaletteFileException.Reason) : PaintsEvent
+}
+
 /** State holder of the "My paints" screen: palettes, the active palette and its paints. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class PaintsViewModel(
     private val paintRepository: PaintRepository,
     private val settingsRepository: SettingsStore,
+    private val paletteTransfer: PaletteTransfer = PaletteTransfer(paintRepository),
+    private val transferDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
 
     private data class DeletedPaint(val paint: Paint, val order: List<Long>)
 
+    private sealed interface ImportOutcome {
+        data class Success(val id: Long, val name: String, val paintCount: Int) : ImportOutcome
+        data class Failure(val reason: PaletteFileException.Reason) : ImportOutcome
+    }
+
     private var lastDeleted: DeletedPaint? = null
+
+    private val eventChannel = Channel<PaintsEvent>(Channel.BUFFERED)
+
+    /** One-off messages; buffered until the screen collects them. */
+    val events: Flow<PaintsEvent> = eventChannel.receiveAsFlow()
 
     /** Current screen state, refreshed after every change in the repositories. */
     val uiState: StateFlow<PaintsUiState> = combine(
@@ -124,6 +157,49 @@ class PaintsViewModel(
         viewModelScope.launch { paintRepository.reorderPaints(palette.id, ids) }
     }
 
+    /**
+     * Returns the suggested file name and the JSON of the active palette, or `null` when there is
+     * no active palette.
+     */
+    suspend fun exportActivePalette(): Pair<String, String>? {
+        val paletteId = settingsRepository.settings.first().activePaletteId ?: return null
+        return withContext(transferDispatcher) {
+            val data = try {
+                paletteTransfer.export(paletteId)
+            } catch (_: IllegalArgumentException) {
+                return@withContext null
+            }
+            suggestedFileName(data.name) to PaletteFileCodec.encode(data)
+        }
+    }
+
+    /** Imports [text] as a new active palette and reports the outcome through [events]. */
+    fun importPalette(text: String) {
+        viewModelScope.launch {
+            when (val outcome = withContext(transferDispatcher) { decodeAndStore(text) }) {
+                is ImportOutcome.Success -> {
+                    settingsRepository.setActivePalette(outcome.id)
+                    eventChannel.send(PaintsEvent.Imported(outcome.name, outcome.paintCount))
+                }
+                is ImportOutcome.Failure -> eventChannel.send(PaintsEvent.ImportFailed(outcome.reason))
+            }
+        }
+    }
+
+    /** Decodes [text] and stores it as a new palette, off the main thread. */
+    private suspend fun decodeAndStore(text: String): ImportOutcome = try {
+        val data = PaletteFileCodec.decode(text)
+        val id = paletteTransfer.import(data)
+        val name = paintRepository.getPalettes().firstOrNull { it.id == id }?.name ?: data.name
+        ImportOutcome.Success(id, name, data.paints.size)
+    } catch (e: PaletteFileException) {
+        ImportOutcome.Failure(e.reason)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (_: Exception) {
+        ImportOutcome.Failure(PaletteFileException.Reason.INVALID)
+    }
+
     companion object {
         private const val STOP_TIMEOUT_MILLIS = 5_000L
 
@@ -134,6 +210,7 @@ class PaintsViewModel(
                 PaintsViewModel(
                     paintRepository = app.container.paintRepository,
                     settingsRepository = app.container.settingsRepository,
+                    paletteTransfer = app.container.paletteTransfer,
                 )
             }
         }

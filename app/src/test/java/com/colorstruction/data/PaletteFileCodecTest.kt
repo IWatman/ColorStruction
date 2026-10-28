@@ -147,6 +147,7 @@ class PaletteFileCodecTest {
     fun suggestedFileNameSanitizes() {
         assertEquals("Моя палитра.colorstruction.json", suggestedFileName("Моя палитра"))
         assertEquals("a_b_c.colorstruction.json", suggestedFileName("a/b:c"))
+        assertEquals("Basic Acrylic (2).colorstruction.json", suggestedFileName("Basic Acrylic (2)"))
         assertEquals("my_palette-1.colorstruction.json", suggestedFileName("  my_palette-1  "))
         assertEquals("palette.colorstruction.json", suggestedFileName("   "))
         assertEquals("___.colorstruction.json", suggestedFileName("///"))

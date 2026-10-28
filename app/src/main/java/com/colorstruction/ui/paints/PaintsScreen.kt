@@ -18,6 +18,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.colorstruction.R
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
@@ -53,6 +55,19 @@ fun PaintsScreen(
     val context = LocalContext.current
     var dialog by remember { mutableStateOf<PaletteDialog?>(null) }
     val active = state.activePalette
+    val transfer = rememberPaletteTransfer(viewModel, snackbarHostState)
+
+    LaunchedEffect(viewModel, snackbarHostState) {
+        viewModel.events.collect { event ->
+            snackbarHostState.showSnackbar(
+                when (event) {
+                    is PaintsEvent.Imported ->
+                        context.getString(R.string.palette_imported, event.name, event.paintCount)
+                    is PaintsEvent.ImportFailed -> context.getString(event.reason.messageRes())
+                },
+            )
+        }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -65,6 +80,18 @@ fun PaintsScreen(
                         PaletteAction.New -> PaletteDialog.NEW
                         PaletteAction.Rename -> PaletteDialog.RENAME
                         PaletteAction.Delete -> PaletteDialog.DELETE
+                        PaletteAction.Share -> {
+                            transfer.share()
+                            null
+                        }
+                        PaletteAction.SaveToFile -> {
+                            transfer.saveToFile()
+                            null
+                        }
+                        PaletteAction.Import -> {
+                            transfer.importFromFile()
+                            null
+                        }
                         is PaletteAction.SetType -> {
                             active?.let { viewModel.setPaletteType(it.id, action.type) }
                             null

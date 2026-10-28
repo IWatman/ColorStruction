@@ -135,7 +135,7 @@ object PaletteFileCodec {
  */
 fun suggestedFileName(name: String): String {
     val sanitized = name
-        .map { if (it.isLetterOrDigit() || it == ' ' || it == '-' || it == '_') it else '_' }
+        .map { if (it.isLetterOrDigit() || it in " -_()") it else '_' }
         .joinToString("")
         .trim()
         .take(60)

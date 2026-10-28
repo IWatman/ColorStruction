@@ -114,6 +114,18 @@
     <string name="move_down">Переместить вниз</string>
     <string name="more_options">Ещё</string>
 
+    <string name="share_palette">Поделиться палитрой</string>
+    <string name="save_palette_to_file">Сохранить в файл</string>
+    <string name="import_palette">Импортировать палитру</string>
+    <string name="share_palette_chooser">Отправить палитру</string>
+    <string name="palette_saved">Палитра сохранена</string>
+    <string name="palette_save_failed">Не удалось сохранить файл</string>
+    <string name="palette_imported">Импортирована «%1$s»: красок — %2$d</string>
+    <string name="import_error_not_palette">Это не файл палитры ColorStruction</string>
+    <string name="import_error_newer_version">Палитра создана в более новой версии приложения — обновите ColorStruction</string>
+    <string name="import_error_damaged">Файл палитры повреждён</string>
+    <string name="import_error_too_large">Файл палитры слишком большой</string>
+
     <string name="new_paint">Новая краска</string>
     <string name="edit_paint">Изменить краску</string>
     <string name="paint_name">Название краски</string>

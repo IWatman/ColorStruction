@@ -6,6 +6,9 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.outlined.FileOpen
+import androidx.compose.material.icons.outlined.Save
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -25,6 +28,9 @@ internal sealed interface PaletteAction {
     data object New : PaletteAction
     data object Rename : PaletteAction
     data object Delete : PaletteAction
+    data object Share : PaletteAction
+    data object SaveToFile : PaletteAction
+    data object Import : PaletteAction
     data class SetType(val type: PaletteType) : PaletteAction
 }
 
@@ -66,6 +72,24 @@ internal fun PaletteActionsMenu(
                 onClick = { onAction(PaletteAction.SetType(type)) },
             )
         }
+        HorizontalDivider()
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.share_palette)) },
+            leadingIcon = { Icon(Icons.Outlined.Share, contentDescription = null) },
+            enabled = active != null,
+            onClick = { onAction(PaletteAction.Share) },
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.save_palette_to_file)) },
+            leadingIcon = { Icon(Icons.Outlined.Save, contentDescription = null) },
+            enabled = active != null,
+            onClick = { onAction(PaletteAction.SaveToFile) },
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.import_palette)) },
+            leadingIcon = { Icon(Icons.Outlined.FileOpen, contentDescription = null) },
+            onClick = { onAction(PaletteAction.Import) },
+        )
         HorizontalDivider()
         DropdownMenuItem(
             text = { Text(stringResource(R.string.delete_palette)) },

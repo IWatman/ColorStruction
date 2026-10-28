@@ -2,4 +2,6 @@
 <paths>
     <!-- Camera shots of paint swatches for the eyedropper. -->
     <cache-path name="camera" path="camera/" />
+    <!-- Palette files handed to the share sheet. -->
+    <cache-path name="shared" path="shared/" />
 </paths>
