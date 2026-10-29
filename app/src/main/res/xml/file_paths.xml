@@ -4,4 +4,6 @@
     <cache-path name="camera" path="camera/" />
     <!-- Palette files handed to the share sheet. -->
     <cache-path name="shared" path="shared/" />
+    <!-- Rendered recipe images handed to the share sheet. -->
+    <cache-path name="shared_images" path="shared_images/" />
 </paths>

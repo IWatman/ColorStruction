@@ -95,6 +95,10 @@
     <string name="initial_color">Исходный цвет</string>
     <string name="solving">Подбираю…</string>
     <string name="no_paints_in_palette">Добавьте краски в палитру, чтобы получить рецепты</string>
+    <string name="share_recipe">Поделиться рецептом</string>
+    <string name="share_recipe_chooser">Отправить рецепт</string>
+    <string name="recipe_image_title">Рецепт смешивания</string>
+    <string name="recipe_image_footer">Сделано в ColorStruction</string>
 
     <string name="palette">Палитра</string>
     <string name="new_palette">Новая палитра</string>

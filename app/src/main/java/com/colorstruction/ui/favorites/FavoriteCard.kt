@@ -13,16 +13,19 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -31,6 +34,14 @@ import com.colorstruction.color.Rgb
 import com.colorstruction.data.FavoriteComponent
 import com.colorstruction.data.FavoriteRecipe
 import com.colorstruction.mixing.Proportions
+import com.colorstruction.ui.share.RecipeImageData
+import com.colorstruction.ui.share.RecipeImageTexts
+import com.colorstruction.ui.share.WATER_SWATCH
+import com.colorstruction.ui.share.renderRecipeImage
+import com.colorstruction.ui.share.shareRecipeImage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.DateFormat
 import java.util.Date
 
@@ -50,30 +61,28 @@ private val SwatchShape = RoundedCornerShape(6.dp)
 @Composable
 internal fun FavoriteCard(favorite: FavoriteRecipe, onOpen: () -> Unit, onDelete: () -> Unit) {
     val parts = Proportions.exactParts(favorite.components.map { it.weight })
+    val onShare = rememberFavoriteShare(favorite, parts)
     ElevatedCard(Modifier.fillMaxWidth().clickable(onClick = onOpen)) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
-                    Modifier
-                        .size(40.dp)
-                        .clip(SwatchShape)
-                        .background(Color(favorite.target.toArgbInt()))
+                    Modifier.size(40.dp).clip(SwatchShape).background(Color(favorite.target.toArgbInt()))
                         .border(1.dp, MaterialTheme.colorScheme.outlineVariant, SwatchShape),
                 )
                 Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
+                    val muted = MaterialTheme.colorScheme.onSurfaceVariant
                     Text(Rgb.formatHex(favorite.target), style = MaterialTheme.typography.titleMedium)
                     if (favorite.paletteName.isNotEmpty()) {
                         Text(
                             text = stringResource(R.string.from_palette, favorite.paletteName),
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = muted,
                         )
                     }
-                    Text(
-                        text = formatDate(favorite.createdAt),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    Text(formatDate(favorite.createdAt), style = MaterialTheme.typography.labelSmall, color = muted)
+                }
+                IconButton(onClick = onShare) {
+                    Icon(Icons.Outlined.Share, contentDescription = stringResource(R.string.share_recipe))
                 }
                 IconButton(onClick = onDelete) {
                     Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.delete_favorite))
@@ -92,9 +101,7 @@ internal fun FavoriteCard(favorite: FavoriteRecipe, onOpen: () -> Unit, onDelete
 private fun ComponentRow(component: FavoriteComponent, share: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
-            Modifier
-                .size(24.dp)
-                .clip(SwatchShape)
+            Modifier.size(24.dp).clip(SwatchShape)
                 .background(if (component.isWater) WaterColor else Color(component.color.toArgbInt()))
                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant, SwatchShape),
         )

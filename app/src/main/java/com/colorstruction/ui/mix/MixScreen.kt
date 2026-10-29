@@ -114,6 +114,12 @@ fun MixScreen(
                 totalAmount = uiState.totalAmount,
                 isSaved = recipe.favoriteKey in uiState.savedRecipeKeys,
                 onSave = { viewModel.saveFavorite(recipe) },
+                onShare = rememberRecipeShare(
+                    recipe = recipe,
+                    target = target,
+                    ratioFormat = uiState.ratioFormat,
+                    paletteName = uiState.palette?.name.orEmpty(),
+                ),
             )
         }
         if (uiState.paintCount == 0) {

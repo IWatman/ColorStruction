@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -50,6 +51,7 @@ private val SwatchShape = RoundedCornerShape(6.dp)
  * @param totalAmount total volume of the recipe in millilitres, shown in the amount mode.
  * @param isSaved whether this exact recipe is already stored as a favorite.
  * @param onSave invoked when the star is tapped on a recipe that is not saved yet.
+ * @param onShare invoked when the share button is tapped.
  */
 @Composable
 fun RecipeCard(
@@ -59,11 +61,12 @@ fun RecipeCard(
     totalAmount: Int,
     isSaved: Boolean,
     onSave: () -> Unit,
+    onShare: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Header(recipe, target, isSaved, onSave)
+            Header(recipe, target, isSaved, onSave, onShare)
             recipe.recipe.components.forEachIndexed { index, component ->
                 val label = recipe.componentLabels.getOrElse(index) { "" }
                 // Amount labels arrive as bare numbers; the unit is localized here, at render
@@ -87,13 +90,14 @@ fun RecipeCard(
     }
 }
 
-/** Side-by-side target and result swatches, the accuracy badge, ΔE and the save star. */
+/** Side-by-side target and result swatches, the accuracy badge, ΔE and the share/save buttons. */
 @Composable
 private fun Header(
     recipe: RecipeUi,
     target: Rgb,
     isSaved: Boolean,
     onSave: () -> Unit,
+    onShare: () -> Unit,
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
@@ -113,6 +117,13 @@ private fun Header(
             val style = MaterialTheme.typography.labelSmall
             val color = MaterialTheme.colorScheme.onSurfaceVariant
             Text(stringResource(R.string.delta_e, recipe.roundedDeltaE), style = style, color = color)
+        }
+        IconButton(onClick = onShare) {
+            Icon(
+                imageVector = Icons.Outlined.Share,
+                contentDescription = stringResource(R.string.share_recipe),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
         IconButton(onClick = onSave, enabled = !isSaved) {
             Icon(

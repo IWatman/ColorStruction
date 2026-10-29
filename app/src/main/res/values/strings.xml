@@ -97,6 +97,10 @@
     <string name="initial_color">Initial color</string>
     <string name="solving">Mixing…</string>
     <string name="no_paints_in_palette">Add paints to the palette to get recipes</string>
+    <string name="share_recipe">Share recipe</string>
+    <string name="share_recipe_chooser">Share recipe</string>
+    <string name="recipe_image_title">Mixing recipe</string>
+    <string name="recipe_image_footer">Made with ColorStruction</string>
 
     <string name="palette">Palette</string>
     <string name="new_palette">New palette</string>
