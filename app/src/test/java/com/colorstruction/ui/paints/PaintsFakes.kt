@@ -171,6 +171,10 @@ internal class FakeFavoriteRepository(initial: List<FavoriteRecipe> = emptyList(
         state.value = state.value.copy(themeMode = mode)
     }
 
+    override suspend fun setShowRgbComparison(show: Boolean) {
+        state.value = state.value.copy(showRgbComparison = show)
+    }
+
     override suspend fun addRecentColor(argb: Int) {
         val updated = (listOf(argb) + state.value.recentColors.filterNot { it == argb })
             .take(SettingsRepository.MAX_RECENT_COLORS)

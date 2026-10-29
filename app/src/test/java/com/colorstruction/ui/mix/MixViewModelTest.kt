@@ -1,7 +1,9 @@
 package com.colorstruction.ui.mix
 
 import androidx.lifecycle.SavedStateHandle
+import com.colorstruction.color.DeltaE
 import com.colorstruction.color.Rgb
+import com.colorstruction.color.rgbMix
 import com.colorstruction.data.AppSettings
 import com.colorstruction.data.Paint
 import com.colorstruction.data.Palette
@@ -253,5 +255,52 @@ class MixViewModelTest {
         assertEquals(AppSettings.MAX_TOTAL_AMOUNT, viewModel.uiState.value.totalAmount)
     }
 
+    @Test
+    fun rgbComparisonIsOffByDefault() = runTest(dispatcher) {
+        val viewModel = observe(createViewModel(filledRepository()))
+        viewModel.setTarget(oliveTarget)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.showRgbComparison)
+        assertTrue(state.recipes.all { it.rgbResult == null && it.rgbDeltaE == null })
+    }
+
+    @Test
+    fun rgbComparisonFillsRecipesWhenEnabled() = runTest(dispatcher) {
+        val settings = FakeSettingsStore(
+            AppSettings(activePaletteId = 1L, showRgbComparison = true),
+        )
+        val viewModel = observe(createViewModel(filledRepository(), settings))
+        viewModel.setTarget(oliveTarget)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.showRgbComparison)
+        assertTrue(state.recipes.isNotEmpty())
+        assertTrue(state.recipes.all { it.rgbResult != null })
+
+        val recipe = state.recipes.first()
+        val rgbResult = requireNotNull(recipe.rgbResult)
+        val expected = rgbMix(
+            recipe.recipe.components.mapIndexed { index, component ->
+                (component.paint?.color ?: Rgb.WHITE) to recipe.displayWeights[index]
+            },
+        )
+        assertEquals(expected.r, rgbResult.r, 1e-9)
+        assertEquals(expected.g, rgbResult.g, 1e-9)
+        assertEquals(expected.b, rgbResult.b, 1e-9)
+        val deltaE = requireNotNull(recipe.rgbDeltaE)
+        // The view model stores the target as ARGB, so compare against the rounded target.
+        val displayedTarget = Rgb.fromArgbInt(oliveTarget.toArgbInt())
+        assertEquals(
+            DeltaE.ciede2000(rgbResult.toLab(), displayedTarget.toLab()),
+            deltaE,
+            1e-9,
+        )
+        assertTrue(deltaE >= 0.0)
+    }
+
     private fun RecipeUi.singlePaintName(): String? =
-        recipe.components.single().paint?.name}
+        recipe.components.single().paint?.name
+}

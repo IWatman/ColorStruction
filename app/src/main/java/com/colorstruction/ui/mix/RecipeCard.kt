@@ -67,6 +67,7 @@ fun RecipeCard(
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Header(recipe, target, isSaved, onSave, onShare)
+            recipe.rgbResult?.let { rgb -> RgbComparisonRow(rgb, recipe.rgbDeltaE) }
             recipe.recipe.components.forEachIndexed { index, component ->
                 val label = recipe.componentLabels.getOrElse(index) { "" }
                 // Amount labels arrive as bare numbers; the unit is localized here, at render
@@ -134,6 +135,31 @@ private fun Header(
                 tint = if (isSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+    }
+}
+
+/**
+ * Compact row under the header: the naive RGB average as a small swatch plus its ΔE.
+ *
+ * @param rgb the color plain channel averaging would produce.
+ * @param rgbDeltaE its color difference to the target, when known.
+ */
+@Composable
+private fun RgbComparisonRow(rgb: Rgb, rgbDeltaE: Double?) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            Modifier
+                .size(16.dp)
+                .clip(SwatchShape)
+                .background(Color(rgb.toArgbInt()))
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, SwatchShape),
+        )
+        Text(
+            text = stringResource(R.string.rgb_comparison, rgbDeltaE ?: 0.0),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 8.dp),
+        )
     }
 }
 

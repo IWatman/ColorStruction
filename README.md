@@ -32,10 +32,10 @@ honest accuracy estimate.
 |---|---|
 | <img src="docs/screenshots/picker.png" width="220" alt="Color picker"> | **Pick any color**<br>A hue ring with a saturation/value square, plus HEX input and RGB sliders, all in sync. Recent colors are one tap away. |
 | <img src="docs/screenshots/eyedropper.png" width="220" alt="Eyedropper"> | **Eyedropper on photos**<br>Take a picture or choose one from the gallery. Pinch to zoom, drag the crosshair, and a magnifier loupe shows exactly which pixels you're sampling (1 px, 3×3 or 5×5, averaged in linear light). |
-| <img src="docs/screenshots/mix.png" width="220" alt="Recipes"> | **Recipes from your paints**<br>Up to 5 paints per recipe, and fewer is preferred. Proportions as parts (`2½ : 1½`) or percentages. Every recipe shows the target next to the predicted result and its color difference (ΔE) *after* rounding — so "1 : 1" really means what it says. |
+| <img src="docs/screenshots/mix.png" width="220" alt="Recipes"> | **Recipes from your paints**<br>Up to 5 paints per recipe, and fewer is preferred. Proportions as parts (`2½ : 1½`), percentages or millilitres for a chosen total ("how much of each for 50 ml"). Every recipe shows the target next to the predicted result and its color difference (ΔE) *after* rounding — so "1 : 1" really means what it says. |
 | <img src="docs/screenshots/paints.png" width="220" alt="My paints"> | **Your palettes**<br>Several palettes, each opaque (acrylic, oil, gouache) or watercolor — for watercolor the app lightens with water instead of white. Add paints by color wheel, HEX or a photo of a swatch; tune each paint's tinting strength. Share a palette with friends or back it up as a `.colorstruction.json` file, and import palettes from files. |
-| <img src="docs/screenshots/favorites.png" width="220" alt="Favorites"> | **Favorite recipes**<br>Star a recipe to keep it. Favorites are snapshots, so editing or deleting paints later doesn't change them. |
-| <img src="docs/screenshots/settings.png" width="220" alt="Settings"> | **Made to live with**<br>Light, dark or system theme. English and Russian, switchable in the app. Updates install from inside the app. |
+| <img src="docs/screenshots/favorites.png" width="220" alt="Favorites"> | **Favorite recipes**<br>Star a recipe to keep it. Favorites are snapshots, so editing or deleting paints later doesn't change them. Share any recipe as an image. |
+| <img src="docs/screenshots/settings.png" width="220" alt="Settings"> | **Made to live with**<br>Light, dark or system theme. English and Russian, switchable in the app. Updates install from inside the app. A learning mode shows what naive RGB averaging would give next to each recipe. |
 
 ## How the mixing works
 
@@ -123,10 +123,8 @@ The UI ships in English (default) and Russian. To add a language:
 
 ## Roadmap
 
-Ideas for after 1.0 — see [PLAN.md](PLAN.md):
-
-- Sharing a recipe as an image
-- Amounts by volume ("how many ml of each for 50 ml")
+Everything in the original plan is done — see [PLAN.md](PLAN.md). More languages can be
+added on request (see [Translations](#translations)).
 
 ## Credits
 

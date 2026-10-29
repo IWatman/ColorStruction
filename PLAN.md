@@ -193,11 +193,12 @@ Each stage ends with a build (`./gradlew assembleDebug`) and a test run.
 - [x] `v0.1.0` released; in-app update verified on the emulator (0.0.9 → 0.1.0, cancel and back-dismiss do not leave the progress stuck)
 
 ## Possible improvements (post-MVP)
-- Paint calibration from a photo of a swatch (several concentrations with white)
-- Palette export/import (JSON), share a recipe as an image
-- Comparison with RGB mixing (learning mode)
-- Volume-based amounts: "how many ml of each for 50 ml"
-- More languages
+- [x] Paint calibration from a photo of a swatch (v1.2.0)
+- [x] Palette export/import (JSON) (v1.1.0)
+- [x] Share a recipe as an image (v1.3.0)
+- [x] Comparison with RGB mixing (learning mode) (v1.3.0)
+- [x] Volume-based amounts: "how many ml of each for 50 ml" (v1.3.0)
+- [ ] More languages — on request
 
 ## Code structure
 

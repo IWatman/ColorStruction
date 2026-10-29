@@ -28,6 +28,9 @@
     <string name="theme_light">Светлая</string>
     <string name="theme_dark">Тёмная</string>
     <string name="recent_colors">Недавние</string>
+    <string name="settings_learning">Обучение</string>
+    <string name="rgb_comparison_setting">Сравнивать с RGB-смешением</string>
+    <string name="rgb_comparison_setting_hint">Показывать, что дало бы простое усреднение RGB — поэтому цвета на экране смешиваются не как краски.</string>
     <string name="settings_updates">Обновления</string>
     <string name="current_version">Версия %1$s</string>
     <string name="check_updates">Проверить обновления</string>
@@ -81,6 +84,7 @@
     <string name="water">Вода</string>
     <string name="from_palette">Из палитры: %1$s</string>
     <string name="delta_e">ΔE %1$.1f</string>
+    <string name="rgb_comparison">Усреднение RGB дало бы такой цвет — ΔE %1$.1f</string>
     <string name="accuracy_almost_exact">Почти точно</string>
     <string name="accuracy_close">Близко</string>
     <string name="accuracy_similar">Похоже</string>

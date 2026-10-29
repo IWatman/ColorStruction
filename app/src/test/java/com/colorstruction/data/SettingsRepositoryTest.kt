@@ -152,6 +152,30 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun storesShowRgbComparison() = runTest {
+        assertEquals(false, repository.settings.first().showRgbComparison)
+
+        repository.setShowRgbComparison(true)
+        assertEquals(true, repository.settings.first().showRgbComparison)
+
+        repository.setShowRgbComparison(false)
+        assertEquals(false, repository.settings.first().showRgbComparison)
+    }
+
+    @Test
+    fun keepsShowRgbComparisonAcrossRepositoryInstances() = runTest {
+        repository.setShowRgbComparison(true)
+        storeScope.coroutineContext.job.cancelAndJoin()
+
+        storeScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        val reopened = SettingsRepository(
+            PreferenceDataStoreFactory.create(scope = storeScope) { settingsFile },
+        )
+
+        assertEquals(true, reopened.settings.first().showRgbComparison)
+    }
+
+    @Test
     fun addRecentColorKeepsOrderAndDedupes() = runTest {
         repository.addRecentColor(1)
         repository.addRecentColor(2)

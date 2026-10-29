@@ -17,7 +17,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.colorstruction.R
 
-/** Settings tab: language, in-app updater and the about block. */
+/** Settings tab: language, theme, learning aids, in-app updater and the about block. */
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
@@ -25,6 +25,7 @@ fun SettingsScreen(
 ) {
     val language by viewModel.language.collectAsStateWithLifecycle()
     val theme by viewModel.themeMode.collectAsStateWithLifecycle()
+    val showRgbComparison by viewModel.showRgbComparison.collectAsStateWithLifecycle()
     val updateState by viewModel.updateState.collectAsStateWithLifecycle()
 
     Column(
@@ -46,6 +47,11 @@ fun SettingsScreen(
         ThemeSection(
             selected = theme,
             onSelect = viewModel::setThemeMode,
+        )
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+        LearningSection(
+            showRgbComparison = showRgbComparison,
+            onShowRgbComparisonChange = viewModel::setShowRgbComparison,
         )
         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
         UpdateSection(

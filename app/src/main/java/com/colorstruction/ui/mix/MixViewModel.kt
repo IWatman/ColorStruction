@@ -73,6 +73,14 @@ class MixViewModel(
         val maxComponents: Int,
         val ratioFormat: RatioFormat,
         val totalAmount: Int,
+        val showRgbComparison: Boolean,
+    )
+
+    /** Palette and paint display settings that change how a recipe is rendered. */
+    private data class Display(
+        val ratioFormat: RatioFormat,
+        val totalAmount: Int,
+        val showRgbComparison: Boolean,
     )
 
     private val activePalette: Flow<PalettePaints> = appSettings
@@ -96,10 +104,18 @@ class MixViewModel(
         _target,
         activePalette,
         appSettings.map { it.maxComponents }.distinctUntilChanged(),
-        appSettings.map { it.ratioFormat }.distinctUntilChanged(),
-        appSettings.map { it.totalAmount }.distinctUntilChanged(),
-    ) { target, (palette, paints), maxComponents, ratioFormat, totalAmount ->
-        Request(target, palette, paints, maxComponents, ratioFormat, totalAmount)
+        appSettings.map { Display(it.ratioFormat, it.totalAmount, it.showRgbComparison) }
+            .distinctUntilChanged(),
+    ) { target, (palette, paints), maxComponents, display ->
+        Request(
+            target = target,
+            palette = palette,
+            paints = paints,
+            maxComponents = maxComponents,
+            ratioFormat = display.ratioFormat,
+            totalAmount = display.totalAmount,
+            showRgbComparison = display.showRgbComparison,
+        )
     }.debounce(DEBOUNCE_MILLIS).flatMapLatest { request ->
         flow {
             emit(request.toState(isSolving = true, recipes = emptyList()))
@@ -192,6 +208,7 @@ class MixViewModel(
                 ratioFormat = request.ratioFormat,
                 solver = solver,
                 totalAmount = request.totalAmount,
+                showRgbComparison = request.showRgbComparison,
                 amountLabel = amountLabel,
             )
         }
@@ -207,6 +224,7 @@ class MixViewModel(
             ratioFormat = ratioFormat,
             totalAmount = totalAmount,
             isSolving = isSolving,
+            showRgbComparison = showRgbComparison,
             recipes = recipes,
         )
 

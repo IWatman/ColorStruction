@@ -3,6 +3,7 @@ package com.colorstruction.data
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
@@ -33,6 +34,7 @@ enum class RatioFormat {
  * @property totalAmount total volume of a recipe in millilitres, used by [RatioFormat.AMOUNT],
  *   always within [AppSettings.MIN_TOTAL_AMOUNT]..[AppSettings.MAX_TOTAL_AMOUNT].
  * @property themeMode how the app chooses between light and dark schemes.
+ * @property showRgbComparison whether recipes show what naive RGB mixing would give.
  * @property recentColors last distinct target colors as ARGB ints, most recent first.
  */
 data class AppSettings(
@@ -41,6 +43,7 @@ data class AppSettings(
     val ratioFormat: RatioFormat = RatioFormat.PARTS,
     val totalAmount: Int = SettingsRepository.DEFAULT_TOTAL_AMOUNT,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val showRgbComparison: Boolean = false,
     val recentColors: List<Int> = emptyList(),
 ) {
     companion object {
@@ -88,6 +91,9 @@ interface SettingsStore {
 
     /** Stores how the app chooses between light and dark schemes. */
     suspend fun setThemeMode(mode: ThemeMode)
+
+    /** Turns the naive RGB mixing comparison of the recipe cards on or off. */
+    suspend fun setShowRgbComparison(show: Boolean)
 
     /**
      * Records [argb] as the most recent target color, moving it to the front and
@@ -149,6 +155,11 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) : Settin
         dataStore.edit { preferences -> preferences[KEY_THEME_MODE] = mode.name }
     }
 
+    /** Turns the naive RGB mixing comparison of the recipe cards on or off. */
+    override suspend fun setShowRgbComparison(show: Boolean) {
+        dataStore.edit { preferences -> preferences[KEY_SHOW_RGB_COMPARISON] = show }
+    }
+
     /**
      * Records [argb] as the most recent target color, moving it to the front and
      * keeping at most [SettingsRepository.MAX_RECENT_COLORS] distinct colors.
@@ -187,6 +198,7 @@ private val KEY_MAX_COMPONENTS = intPreferencesKey("max_components")
 private val KEY_RATIO_FORMAT = stringPreferencesKey("ratio_format")
 private val KEY_TOTAL_AMOUNT = intPreferencesKey("total_amount")
 private val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
+private val KEY_SHOW_RGB_COMPARISON = booleanPreferencesKey("show_rgb_comparison")
 private val KEY_RECENT_COLORS = stringPreferencesKey("recent_colors")
 
 private fun Preferences.toAppSettings(): AppSettings = AppSettings(
@@ -199,6 +211,7 @@ private fun Preferences.toAppSettings(): AppSettings = AppSettings(
         .coerceIn(AppSettings.MIN_TOTAL_AMOUNT, AppSettings.MAX_TOTAL_AMOUNT),
     themeMode = ThemeMode.entries.firstOrNull { it.name == this[KEY_THEME_MODE] }
         ?: ThemeMode.SYSTEM,
+    showRgbComparison = this[KEY_SHOW_RGB_COMPARISON] ?: false,
     recentColors = parseRecentColors(this[KEY_RECENT_COLORS]),
 )
 

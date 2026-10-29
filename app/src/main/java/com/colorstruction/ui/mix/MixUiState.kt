@@ -1,6 +1,8 @@
 package com.colorstruction.ui.mix
 
+import com.colorstruction.color.DeltaE
 import com.colorstruction.color.Rgb
+import com.colorstruction.color.rgbMix
 import com.colorstruction.data.Palette
 import com.colorstruction.data.RatioFormat
 import com.colorstruction.data.SettingsRepository
@@ -20,6 +22,9 @@ import com.colorstruction.mixing.accuracyOf
  * @property proportionsText those shares as text, in component order.
  * @property roundedResult color of the mix with the rounded shares.
  * @property roundedDeltaE color difference of [roundedResult] to the target.
+ * @property rgbResult color that simply averaging the paint RGB values would give, or `null`
+ *   when the learning mode is off.
+ * @property rgbDeltaE color difference of [rgbResult] to the target, or `null` when off.
  * @property favoriteKey identity used to tell whether this exact recipe is already saved.
  */
 data class RecipeUi(
@@ -31,6 +36,8 @@ data class RecipeUi(
     val roundedDeltaE: Double,
     val accuracy: Accuracy,
     val favoriteKey: String,
+    val rgbResult: Rgb? = null,
+    val rgbDeltaE: Double? = null,
 )
 
 /** Snapshot of the mix screen: target, palette summary and the solved recipes. */
@@ -42,6 +49,7 @@ data class MixUiState(
     val ratioFormat: RatioFormat = RatioFormat.PARTS,
     val totalAmount: Int = SettingsRepository.DEFAULT_TOTAL_AMOUNT,
     val isSolving: Boolean = false,
+    val showRgbComparison: Boolean = false,
     val recipes: List<RecipeUi> = emptyList(),
     val recentColors: List<Int> = emptyList(),
     val savedRecipeKeys: Set<String> = emptySet(),
@@ -51,6 +59,7 @@ data class MixUiState(
  * Rounds [recipe]'s weights into display proportions and re-evaluates the mix with them.
  *
  * @param totalAmount total volume in millilitres, used by [RatioFormat.AMOUNT].
+ * @param showRgbComparison whether to compute the naive RGB mixing comparison.
  * @param amountLabel formats one amount with its unit, for example `12.5 ml`.
  */
 fun recipeUi(
@@ -59,6 +68,7 @@ fun recipeUi(
     ratioFormat: RatioFormat,
     solver: RecipeSolver,
     totalAmount: Int = SettingsRepository.DEFAULT_TOTAL_AMOUNT,
+    showRgbComparison: Boolean = false,
     amountLabel: (Double) -> String = { Amounts.formatAmount(it) },
 ): RecipeUi {
     val weights = recipe.components.map { it.weight }
@@ -89,6 +99,17 @@ fun recipeUi(
         }
     }
     val rounded = solver.evaluate(target, recipe, displayWeights)
+    // Naive RGB mixing: average the paint colors (water counts as white) with the displayed
+    // shares, so the user can see why screen colors do not mix like paint.
+    val rgbResult = if (showRgbComparison) {
+        rgbMix(
+            recipe.components.mapIndexed { index, component ->
+                (component.paint?.color ?: Rgb.WHITE) to displayWeights.getOrElse(index) { 0.0 }
+            },
+        )
+    } else {
+        null
+    }
     return RecipeUi(
         recipe = recipe,
         displayWeights = displayWeights,
@@ -102,5 +123,7 @@ fun recipeUi(
             paintNames = recipe.components.map { it.paint?.name.orEmpty() },
             weights = displayWeights,
         ),
+        rgbResult = rgbResult,
+        rgbDeltaE = rgbResult?.let { DeltaE.ciede2000(it.toLab(), target.toLab()) },
     )
 }

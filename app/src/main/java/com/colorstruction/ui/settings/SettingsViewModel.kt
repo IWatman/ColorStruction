@@ -44,9 +44,17 @@ class SettingsViewModel(
     /** Currently selected theme mode, mirrored from settings storage. */
     val themeMode: StateFlow<ThemeMode> = _themeMode.asStateFlow()
 
+    private val _showRgbComparison = MutableStateFlow(false)
+
+    /** Whether recipe cards compare with naive RGB mixing, mirrored from settings storage. */
+    val showRgbComparison: StateFlow<Boolean> = _showRgbComparison.asStateFlow()
+
     init {
         viewModelScope.launch {
-            settingsStore.settings.collect { _themeMode.value = it.themeMode }
+            settingsStore.settings.collect {
+                _themeMode.value = it.themeMode
+                _showRgbComparison.value = it.showRgbComparison
+            }
         }
     }
 
@@ -62,6 +70,12 @@ class SettingsViewModel(
     /** Stores [mode] as the theme mode. */
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch { settingsStore.setThemeMode(mode) }
+    }
+
+    /** Turns the naive RGB mixing comparison of the recipe cards on or off. */
+    fun setShowRgbComparison(show: Boolean) {
+        _showRgbComparison.value = show
+        viewModelScope.launch { settingsStore.setShowRgbComparison(show) }
     }
 
     /** Applies [lang] to the whole app and mirrors it in [language]. */
