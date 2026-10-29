@@ -134,6 +134,19 @@
     <string name="change_color">Change color</string>
     <string name="tinting_strength">Tinting strength</string>
     <string name="tinting_strength_hint">How strongly this paint tints a mix. Increase if it dominates mixes more than predicted.</string>
+    <string name="calibrate">Calibrate</string>
+    <string name="calibration_title">Calibrate from a swatch</string>
+    <string name="calibration_hint">Mix this paint with another paint in the parts below, paint a swatch, then pick its color from a photo.</string>
+    <string name="calibration_partner">Mixed with</string>
+    <string name="calibration_parts">Parts</string>
+    <string name="calibration_swatch">Swatch</string>
+    <string name="calibration_before">Before</string>
+    <string name="calibration_after">After</string>
     <string name="note">Note</string>
+    <string name="calibration_strength_change">Tinting strength %1$.2f → %2$.2f</string>
+    <string name="calibration_delta_e_change">ΔE %1$.1f → %2$.1f</string>
+    <string name="calibration_at_limit">The result hit the limit of the range — check the parts and the photo lighting.</string>
+    <string name="apply">Apply</string>
+    <string name="pick_swatch_color">Pick color</string>
     <string name="save">Save</string>
 </resources>

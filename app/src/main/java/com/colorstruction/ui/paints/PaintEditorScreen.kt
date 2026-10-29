@@ -1,5 +1,8 @@
 package com.colorstruction.ui.paints
 
+import kotlin.math.exp
+import kotlin.math.ln
+import kotlin.math.round
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,6 +31,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -69,13 +74,22 @@ fun PaintEditorScreen(
     onPickFromImage: (Uri) -> Unit,
     pickedColor: StateFlow<Int?>? = null,
     onClearPickedColor: () -> Unit = {},
+    calibrationColor: StateFlow<Int?>? = null,
+    onClearCalibrationColor: () -> Unit = {},
+    onPickSwatchColor: (Rgb) -> Unit = {},
+    onPickSwatchFromImage: (Uri) -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: PaintEditorViewModel = viewModel(factory = PaintEditorViewModel.Factory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val calibration by viewModel.calibration.collectAsStateWithLifecycle()
     val saved by viewModel.saved.collectAsStateWithLifecycle()
     val pickedFlow = remember(pickedColor) { pickedColor ?: MutableStateFlow<Int?>(null) }
     val pickedArgb by pickedFlow.collectAsStateWithLifecycle()
+    val swatchFlow = remember(calibrationColor) {
+        calibrationColor ?: MutableStateFlow<Int?>(null)
+    }
+    val swatchArgb by swatchFlow.collectAsStateWithLifecycle()
 
     LaunchedEffect(saved) {
         if (saved) onSaved()
@@ -85,6 +99,13 @@ fun PaintEditorScreen(
         if (argb != null) {
             viewModel.onColorChange(Rgb.fromArgbInt(argb))
             onClearPickedColor()
+        }
+    }
+    LaunchedEffect(swatchArgb) {
+        val argb = swatchArgb
+        if (argb != null) {
+            viewModel.setMeasured(Rgb.fromArgbInt(argb))
+            onClearCalibrationColor()
         }
     }
 
@@ -144,6 +165,11 @@ fun PaintEditorScreen(
             StrengthSection(
                 value = state.tintingStrength,
                 onChange = viewModel::onTintingStrengthChange,
+                onCalibrate = if (calibration.available) {
+                    { viewModel.setCalibrationOpen(true) }
+                } else {
+                    null
+                },
             )
             OutlinedTextField(
                 value = state.note,
@@ -153,6 +179,21 @@ fun PaintEditorScreen(
                 minLines = 2,
             )
         }
+    }
+
+    if (calibration.open && calibration.available) {
+        CalibrationSheet(
+            calibration = calibration,
+            paintColor = state.color,
+            currentStrength = state.tintingStrength,
+            onPartnerChange = viewModel::setPartner,
+            onPaintPartsChange = viewModel::setPaintParts,
+            onPartnerPartsChange = viewModel::setPartnerParts,
+            onPickColor = { onPickSwatchColor(calibration.measured ?: state.color) },
+            onPickFromImage = onPickSwatchFromImage,
+            onApply = viewModel::applyCalibration,
+            onDismiss = { viewModel.setCalibrationOpen(false) },
+        )
     }
 }
 
@@ -192,9 +233,13 @@ private fun ColorSection(
     }
 }
 
-/** Tinting strength slider with the current value and a one-line hint. */
+/** Tinting strength slider with the current value, a hint and the calibrate action. */
 @Composable
-private fun StrengthSection(value: Double, onChange: (Double) -> Unit) {
+private fun StrengthSection(
+    value: Double,
+    onChange: (Double) -> Unit,
+    onCalibrate: (() -> Unit)?,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -209,15 +254,36 @@ private fun StrengthSection(value: Double, onChange: (Double) -> Unit) {
                 style = MaterialTheme.typography.titleSmall,
             )
         }
+        // Logarithmic: 1.00× sits in the middle and 0.1×…10× get equal room.
+        val logMin = ln(MIN_TINTING_STRENGTH)
+        val logMax = ln(MAX_TINTING_STRENGTH)
         Slider(
-            value = value.toFloat().coerceIn(MIN_TINTING_STRENGTH, MAX_TINTING_STRENGTH),
-            onValueChange = { onChange(it.toDouble()) },
-            valueRange = MIN_TINTING_STRENGTH..MAX_TINTING_STRENGTH,
+            value = ln(value.toFloat().coerceIn(MIN_TINTING_STRENGTH, MAX_TINTING_STRENGTH)),
+            onValueChange = { onChange((round(exp(it) * 100f) / 100f).toDouble()) },
+            valueRange = logMin..logMax,
         )
-        Text(
-            text = stringResource(R.string.tinting_strength_hint),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.tinting_strength_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            if (onCalibrate != null) {
+                TextButton(onClick = onCalibrate) {
+                    Icon(
+                        imageVector = Icons.Outlined.Tune,
+                        contentDescription = null,
+                    )
+                    Text(
+                        text = stringResource(R.string.calibrate),
+                        modifier = Modifier.padding(start = 8.dp),
+                    )
+                }
+            }
+        }
     }
 }

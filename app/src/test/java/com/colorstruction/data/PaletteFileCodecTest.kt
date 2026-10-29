@@ -113,14 +113,15 @@ class PaletteFileCodecTest {
     fun clampsStrengthAndFallsBackToDefaults() {
         val decoded = PaletteFileCodec.decode(
             json(
-                paint(name = "high", strength = "9.0"),
+                paint(name = "high", strength = "50.0"),
                 paint(name = "low", strength = "0.01"),
                 """{"name":"missing","color":"#FFFFFF"}""",
                 paint(name = "broken", strength = "\"abc\""),
+                paint(name = "strong", strength = "6.5"),
             ),
         )
 
-        assertEquals(listOf(2.0, 0.25, 1.0, 1.0), decoded.paints.map { it.tintingStrength })
+        assertEquals(listOf(10.0, 0.1, 1.0, 1.0, 6.5), decoded.paints.map { it.tintingStrength })
     }
 
     @Test

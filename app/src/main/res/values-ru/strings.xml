@@ -132,6 +132,19 @@
     <string name="change_color">Изменить цвет</string>
     <string name="tinting_strength">Сила тонирования</string>
     <string name="tinting_strength_hint">Насколько сильно эта краска тонирует смесь. Увеличьте, если она влияет на смеси больше, чем предсказано.</string>
+    <string name="calibrate">Калибровка</string>
+    <string name="calibration_title">Калибровка по выкраске</string>
+    <string name="calibration_hint">Смешайте эту краску с другой в указанной пропорции, сделайте выкраску и возьмите её цвет с фото.</string>
+    <string name="calibration_partner">Смешана с</string>
+    <string name="calibration_parts">Пропорция</string>
+    <string name="calibration_swatch">Выкраска</string>
+    <string name="calibration_before">До</string>
+    <string name="calibration_after">После</string>
     <string name="note">Заметка</string>
+    <string name="calibration_strength_change">Сила тона %1$.2f → %2$.2f</string>
+    <string name="calibration_delta_e_change">ΔE %1$.1f → %2$.1f</string>
+    <string name="calibration_at_limit">Результат упёрся в границу диапазона — проверьте пропорцию и освещение фото.</string>
+    <string name="apply">Применить</string>
+    <string name="pick_swatch_color">Выбрать цвет</string>
     <string name="save">Сохранить</string>
 </resources>

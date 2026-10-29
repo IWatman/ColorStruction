@@ -60,8 +60,11 @@ paint gives green, because pigments *subtract* light. ColorStruction mixes subtr
 | 5–10 | Similar | Same kind of color, visibly off |
 | > 10 | Can't be mixed | Your paints can't reach this color |
 
-> The model is an approximation — real pigments differ from reconstructed spectra. If a paint
-> dominates mixes more than predicted, raise its tinting strength in the paint editor.
+> The model is an approximation — real pigments differ from reconstructed spectra, and very
+> dark pigments (ultramarine, phthalos) are usually much stronger than the model assumes.
+> **Calibrate** a paint to fix that: mix it with white in known parts (e.g. 1 : 4), photograph
+> the swatch and pick its color — the app fits the paint's tinting strength (0.1×–10×) so the
+> prediction matches what you actually got.
 
 ## Install
 
@@ -122,7 +125,6 @@ The UI ships in English (default) and Russian. To add a language:
 
 Ideas for after 1.0 — see [PLAN.md](PLAN.md):
 
-- Calibrating a paint from a photo of its swatch
 - Sharing a recipe as an image
 - Amounts by volume ("how many ml of each for 50 ml")
 

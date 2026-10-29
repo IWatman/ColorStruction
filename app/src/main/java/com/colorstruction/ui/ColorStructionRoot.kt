@@ -38,6 +38,7 @@ import com.colorstruction.ui.eyedropper.EyedropperScreen
 import com.colorstruction.ui.favorites.FavoritesScreen
 import com.colorstruction.ui.mix.MixScreen
 import com.colorstruction.ui.mix.PICKED_COLOR_KEY
+import com.colorstruction.ui.paints.CALIBRATION_COLOR_KEY
 import com.colorstruction.ui.paints.PaintEditorScreen
 import com.colorstruction.ui.paints.PaintsScreen
 import com.colorstruction.ui.picker.ColorPickerScreen
@@ -57,7 +58,9 @@ private enum class TopLevelDestination(
 
 private const val PICKER_ROUTE = "picker"
 private const val PICKER_COLOR_ARG = "color"
-private const val PICKER_PATTERN = "$PICKER_ROUTE?$PICKER_COLOR_ARG={$PICKER_COLOR_ARG}"
+private const val RESULT_KEY_ARG = "resultKey"
+private const val PICKER_PATTERN =
+    "$PICKER_ROUTE?$PICKER_COLOR_ARG={$PICKER_COLOR_ARG}&$RESULT_KEY_ARG={$RESULT_KEY_ARG}"
 private const val DEFAULT_TARGET_ARGB: Int = 0xFF3D933E.toInt()
 
 private const val PAINT_EDITOR_ROUTE = "paintEditor"
@@ -69,7 +72,17 @@ private const val NEW_PAINT_ID = -1L
 
 private const val EYEDROPPER_ROUTE = "eyedropper"
 private const val EYEDROPPER_URI_ARG = "uri"
-private const val EYEDROPPER_PATTERN = "$EYEDROPPER_ROUTE?$EYEDROPPER_URI_ARG={$EYEDROPPER_URI_ARG}"
+private const val EYEDROPPER_PATTERN =
+    "$EYEDROPPER_ROUTE?$EYEDROPPER_URI_ARG={$EYEDROPPER_URI_ARG}&$RESULT_KEY_ARG={$RESULT_KEY_ARG}"
+
+/** Builds a picker route that writes the confirmed color under [resultKey]. */
+private fun pickerRoute(argb: Int, resultKey: String = PICKED_COLOR_KEY): String =
+    "$PICKER_ROUTE?$PICKER_COLOR_ARG=$argb&$RESULT_KEY_ARG=$resultKey"
+
+/** Builds an eyedropper route that writes the confirmed color under [resultKey]. */
+private fun eyedropperRoute(uri: Uri, resultKey: String = PICKED_COLOR_KEY): String =
+    "$EYEDROPPER_ROUTE?$EYEDROPPER_URI_ARG=${Uri.encode(uri.toString())}" +
+        "&$RESULT_KEY_ARG=$resultKey"
 
 /** Root navigation graph: three bottom tabs plus the color picker, eyedropper and paint editor. */
 @Composable
@@ -85,7 +98,10 @@ fun ColorStructionRoot() {
 
     // Both the picker and the eyedropper return their color through the previous entry.
     val openEyedropper: (Uri) -> Unit = { uri ->
-        navController.navigate("$EYEDROPPER_ROUTE?$EYEDROPPER_URI_ARG=${Uri.encode(uri.toString())}")
+        navController.navigate(eyedropperRoute(uri))
+    }
+    val openSwatchEyedropper: (Uri) -> Unit = { uri ->
+        navController.navigate(eyedropperRoute(uri, CALIBRATION_COLOR_KEY))
     }
 
     Scaffold(
@@ -196,15 +212,26 @@ fun ColorStructionRoot() {
                 val pickedFlow = remember(entry) {
                     savedStateHandle.getStateFlow<Int?>(PICKED_COLOR_KEY, null)
                 }
+                val swatchFlow = remember(entry) {
+                    savedStateHandle.getStateFlow<Int?>(CALIBRATION_COLOR_KEY, null)
+                }
                 PaintEditorScreen(
                     onBack = { navController.popBackStack() },
                     onSaved = { navController.popBackStack() },
                     onPickColor = { rgb ->
-                        navController.navigate("$PICKER_ROUTE?$PICKER_COLOR_ARG=${rgb.toArgbInt()}")
+                        navController.navigate(pickerRoute(rgb.toArgbInt()))
                     },
                     onPickFromImage = openEyedropper,
                     pickedColor = pickedFlow,
                     onClearPickedColor = { savedStateHandle[PICKED_COLOR_KEY] = null },
+                    calibrationColor = swatchFlow,
+                    onClearCalibrationColor = { savedStateHandle[CALIBRATION_COLOR_KEY] = null },
+                    onPickSwatchColor = { rgb ->
+                        navController.navigate(
+                            pickerRoute(rgb.toArgbInt(), CALIBRATION_COLOR_KEY),
+                        )
+                    },
+                    onPickSwatchFromImage = openSwatchEyedropper,
                 )
             }
             composable(
@@ -214,11 +241,16 @@ fun ColorStructionRoot() {
                         type = NavType.StringType
                         nullable = true
                     },
+                    navArgument(RESULT_KEY_ARG) {
+                        type = NavType.StringType
+                        defaultValue = PICKED_COLOR_KEY
+                    },
                 ),
             ) { entry ->
                 val imageUri = entry.arguments
                     ?.getString(EYEDROPPER_URI_ARG)
                     ?.let(Uri::parse)
+                val resultKey = entry.arguments?.getString(RESULT_KEY_ARG) ?: PICKED_COLOR_KEY
                 if (imageUri == null) {
                     LaunchedEffect(Unit) { navController.popBackStack() }
                 } else {
@@ -227,7 +259,7 @@ fun ColorStructionRoot() {
                         onConfirm = { rgb ->
                             navController.previousBackStackEntry
                                 ?.savedStateHandle
-                                ?.set(PICKED_COLOR_KEY, rgb.toArgbInt())
+                                ?.set(resultKey, rgb.toArgbInt())
                             navController.popBackStack()
                         },
                         onCancel = { navController.popBackStack() },
@@ -241,15 +273,20 @@ fun ColorStructionRoot() {
                         type = NavType.IntType
                         defaultValue = DEFAULT_TARGET_ARGB
                     },
+                    navArgument(RESULT_KEY_ARG) {
+                        type = NavType.StringType
+                        defaultValue = PICKED_COLOR_KEY
+                    },
                 ),
             ) { entry ->
                 val initialArgb = entry.arguments?.getInt(PICKER_COLOR_ARG) ?: DEFAULT_TARGET_ARGB
+                val resultKey = entry.arguments?.getString(RESULT_KEY_ARG) ?: PICKED_COLOR_KEY
                 ColorPickerScreen(
                     initialColor = Rgb.fromArgbInt(initialArgb),
                     onConfirm = { rgb ->
                         navController.previousBackStackEntry
                             ?.savedStateHandle
-                            ?.set(PICKED_COLOR_KEY, rgb.toArgbInt())
+                            ?.set(resultKey, rgb.toArgbInt())
                         navController.popBackStack()
                     },
                     onCancel = { navController.popBackStack() },

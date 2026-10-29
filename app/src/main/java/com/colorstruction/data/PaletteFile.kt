@@ -47,8 +47,8 @@ object PaletteFileCodec {
     const val MAX_PAINTS: Int = 500
     const val MAX_NAME_LENGTH: Int = 100
     const val MAX_NOTE_LENGTH: Int = 500
-    const val MIN_TINTING_STRENGTH: Double = 0.25
-    const val MAX_TINTING_STRENGTH: Double = 2.0
+    const val MIN_TINTING_STRENGTH: Double = 0.1
+    const val MAX_TINTING_STRENGTH: Double = 10.0
     private const val INDENT = 2
 
     /** Serializes [data] to pretty-printed JSON (2-space indent). */

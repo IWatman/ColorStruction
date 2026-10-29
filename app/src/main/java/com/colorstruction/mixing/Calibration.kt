@@ -59,10 +59,10 @@ data class CalibrationResult(
 object Calibration {
 
     /** Lowest tinting strength the fit may return. */
-    const val MIN_STRENGTH = 0.25
+    const val MIN_STRENGTH = 0.1
 
     /** Highest tinting strength the fit may return. */
-    const val MAX_STRENGTH = 2.0
+    const val MAX_STRENGTH = 10.0
 
     private const val SCAN_POINTS = 40
     private const val TOLERANCE = 1e-4
