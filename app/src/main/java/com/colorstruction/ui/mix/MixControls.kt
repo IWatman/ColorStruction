@@ -21,20 +21,24 @@ import com.colorstruction.data.AppSettings
 import com.colorstruction.data.RatioFormat
 
 /**
- * Display controls of the mix screen: parts vs percents and the paint cap.
+ * Display controls of the mix screen: parts vs percents vs millilitres and the paint cap.
  *
  * @param ratioFormat currently selected proportion format.
  * @param maxComponents currently selected paint cap per recipe.
+ * @param totalAmount total volume of a recipe in millilitres, used by the amount mode.
  * @param onRatioFormatChange invoked when the user switches the proportion format.
  * @param onMaxComponentsChange invoked with the new paint cap (1..5).
+ * @param onTotalAmountChange invoked with the new total volume in millilitres (1..5000).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MixControls(
     ratioFormat: RatioFormat,
     maxComponents: Int,
+    totalAmount: Int,
     onRatioFormatChange: (RatioFormat) -> Unit,
     onMaxComponentsChange: (Int) -> Unit,
+    onTotalAmountChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val formats = RatioFormat.entries
@@ -50,6 +54,9 @@ fun MixControls(
                     Text(text = format.label())
                 }
             }
+        }
+        if (ratioFormat == RatioFormat.AMOUNT) {
+            TotalAmountRow(totalAmount, onTotalAmountChange)
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -76,4 +83,5 @@ fun MixControls(
 private fun RatioFormat.label(): String = when (this) {
     RatioFormat.PARTS -> stringResource(R.string.parts)
     RatioFormat.PERCENT -> stringResource(R.string.percent)
+    RatioFormat.AMOUNT -> stringResource(R.string.amount_unit_ml)
 }

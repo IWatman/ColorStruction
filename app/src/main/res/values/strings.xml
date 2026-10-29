@@ -89,6 +89,10 @@
     <string name="accuracy_not_possible">Can\'t be mixed</string>
     <string name="parts">Parts</string>
     <string name="percent">%</string>
+    <string name="amount_unit_ml">ml</string>
+    <string name="total_amount">Total, ml</string>
+    <string name="total_amount_line">Total %1$s ml</string>
+    <string name="amount_label">%1$s ml</string>
     <string name="max_paints">Max paints</string>
     <string name="initial_color">Initial color</string>
     <string name="solving">Mixing…</string>

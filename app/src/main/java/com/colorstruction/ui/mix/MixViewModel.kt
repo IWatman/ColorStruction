@@ -9,8 +9,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.colorstruction.ColorStructionApp
+import com.colorstruction.R
 import com.colorstruction.color.Rgb
 import com.colorstruction.data.*
+import com.colorstruction.mixing.Amounts
 import com.colorstruction.mixing.RecipeSolver
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -34,6 +36,8 @@ class MixViewModel(
     private val settings: SettingsStore,
     private val favoriteRepository: FavoriteRepository,
     private val solverDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    /** Formats one amount with its unit for [RatioFormat.AMOUNT]; set from resources by [Factory]. */
+    private val amountLabel: (Double) -> String = { Amounts.formatAmount(it) },
 ) : ViewModel() {
 
     private val solvers = RecipeSolverCache()
@@ -68,6 +72,7 @@ class MixViewModel(
         val paints: List<Paint>,
         val maxComponents: Int,
         val ratioFormat: RatioFormat,
+        val totalAmount: Int,
     )
 
     private val activePalette: Flow<PalettePaints> = appSettings
@@ -92,8 +97,9 @@ class MixViewModel(
         activePalette,
         appSettings.map { it.maxComponents }.distinctUntilChanged(),
         appSettings.map { it.ratioFormat }.distinctUntilChanged(),
-    ) { target, (palette, paints), maxComponents, ratioFormat ->
-        Request(target, palette, paints, maxComponents, ratioFormat)
+        appSettings.map { it.totalAmount }.distinctUntilChanged(),
+    ) { target, (palette, paints), maxComponents, ratioFormat, totalAmount ->
+        Request(target, palette, paints, maxComponents, ratioFormat, totalAmount)
     }.debounce(DEBOUNCE_MILLIS).flatMapLatest { request ->
         flow {
             emit(request.toState(isSolving = true, recipes = emptyList()))
@@ -149,6 +155,11 @@ class MixViewModel(
         viewModelScope.launch { settings.setRatioFormat(format) }
     }
 
+    /** Sets the total volume of a recipe in millilitres. */
+    fun setTotalAmount(value: Int) {
+        viewModelScope.launch { settings.setTotalAmount(value) }
+    }
+
     /**
      * Stores [recipe] as a favorite with the shares that are displayed, for the current target.
      * Saving the same recipe twice is a no-op.
@@ -174,12 +185,30 @@ class MixViewModel(
         isCancelled: () -> Boolean,
     ): List<RecipeUi> = solver
         .solve(request.target, request.maxComponents, RESULT_COUNT, isCancelled)
-        .map { recipe -> recipeUi(recipe, request.target, request.ratioFormat, solver) }
+        .map { recipe ->
+            recipeUi(
+                recipe = recipe,
+                target = request.target,
+                ratioFormat = request.ratioFormat,
+                solver = solver,
+                totalAmount = request.totalAmount,
+                amountLabel = amountLabel,
+            )
+        }
         // Same rule as the solver, now on the rounded numbers: one extra paint costs 1.0 ΔE.
         .sortedBy { it.roundedDeltaE + it.recipe.paintCount }
 
     private fun Request.toState(isSolving: Boolean, recipes: List<RecipeUi>): MixUiState =
-        MixUiState(target, palette, paints.size, maxComponents, ratioFormat, isSolving, recipes)
+        MixUiState(
+            target = target,
+            palette = palette,
+            paintCount = paints.size,
+            maxComponents = maxComponents,
+            ratioFormat = ratioFormat,
+            totalAmount = totalAmount,
+            isSolving = isSolving,
+            recipes = recipes,
+        )
 
     companion object {
         private const val STOP_TIMEOUT_MILLIS = 5_000L

@@ -18,6 +18,9 @@ enum class RatioFormat {
 
     /** Percentages that sum to 100. */
     PERCENT,
+
+    /** Volumes in millilitres that sum to [AppSettings.totalAmount]. */
+    AMOUNT,
 }
 
 /**
@@ -27,6 +30,8 @@ enum class RatioFormat {
  * @property maxComponents cap on paints per recipe, always within
  *   [AppSettings.MIN_MAX_COMPONENTS]..[AppSettings.MAX_MAX_COMPONENTS].
  * @property ratioFormat how proportions are rendered.
+ * @property totalAmount total volume of a recipe in millilitres, used by [RatioFormat.AMOUNT],
+ *   always within [AppSettings.MIN_TOTAL_AMOUNT]..[AppSettings.MAX_TOTAL_AMOUNT].
  * @property themeMode how the app chooses between light and dark schemes.
  * @property recentColors last distinct target colors as ARGB ints, most recent first.
  */
@@ -34,6 +39,7 @@ data class AppSettings(
     val activePaletteId: Long? = null,
     val maxComponents: Int = SettingsRepository.DEFAULT_MAX_COMPONENTS,
     val ratioFormat: RatioFormat = RatioFormat.PARTS,
+    val totalAmount: Int = SettingsRepository.DEFAULT_TOTAL_AMOUNT,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val recentColors: List<Int> = emptyList(),
 ) {
@@ -43,6 +49,12 @@ data class AppSettings(
 
         /** Inclusive upper bound of [maxComponents]. */
         const val MAX_MAX_COMPONENTS: Int = 5
+
+        /** Inclusive lower bound of [totalAmount] in millilitres. */
+        const val MIN_TOTAL_AMOUNT: Int = 1
+
+        /** Inclusive upper bound of [totalAmount] in millilitres. */
+        const val MAX_TOTAL_AMOUNT: Int = 5000
     }
 }
 
@@ -67,6 +79,12 @@ interface SettingsStore {
 
     /** Stores the proportions format. */
     suspend fun setRatioFormat(format: RatioFormat)
+
+    /**
+     * Stores the total volume of a recipe in millilitres, clamped to
+     * [AppSettings.MIN_TOTAL_AMOUNT]..[AppSettings.MAX_TOTAL_AMOUNT].
+     */
+    suspend fun setTotalAmount(value: Int)
 
     /** Stores how the app chooses between light and dark schemes. */
     suspend fun setThemeMode(mode: ThemeMode)
@@ -117,6 +135,15 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) : Settin
         dataStore.edit { preferences -> preferences[KEY_RATIO_FORMAT] = format.name }
     }
 
+    /**
+     * Stores the total volume of a recipe in millilitres, clamped to
+     * [AppSettings.MIN_TOTAL_AMOUNT]..[AppSettings.MAX_TOTAL_AMOUNT].
+     */
+    override suspend fun setTotalAmount(value: Int) {
+        val clamped = value.coerceIn(AppSettings.MIN_TOTAL_AMOUNT, AppSettings.MAX_TOTAL_AMOUNT)
+        dataStore.edit { preferences -> preferences[KEY_TOTAL_AMOUNT] = clamped }
+    }
+
     /** Stores how the app chooses between light and dark schemes. */
     override suspend fun setThemeMode(mode: ThemeMode) {
         dataStore.edit { preferences -> preferences[KEY_THEME_MODE] = mode.name }
@@ -139,6 +166,9 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) : Settin
         /** Default paint cap per recipe. */
         const val DEFAULT_MAX_COMPONENTS: Int = 3
 
+        /** Default total volume of a recipe in millilitres. */
+        const val DEFAULT_TOTAL_AMOUNT: Int = 50
+
         /** Maximum number of recent target colors kept. */
         const val MAX_RECENT_COLORS: Int = 12
 
@@ -155,6 +185,7 @@ private val Context.settingsDataStore: DataStore<Preferences> by preferencesData
 private val KEY_ACTIVE_PALETTE_ID = longPreferencesKey("active_palette_id")
 private val KEY_MAX_COMPONENTS = intPreferencesKey("max_components")
 private val KEY_RATIO_FORMAT = stringPreferencesKey("ratio_format")
+private val KEY_TOTAL_AMOUNT = intPreferencesKey("total_amount")
 private val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
 private val KEY_RECENT_COLORS = stringPreferencesKey("recent_colors")
 
@@ -164,6 +195,8 @@ private fun Preferences.toAppSettings(): AppSettings = AppSettings(
         .coerceIn(AppSettings.MIN_MAX_COMPONENTS, AppSettings.MAX_MAX_COMPONENTS),
     ratioFormat = RatioFormat.entries.firstOrNull { it.name == this[KEY_RATIO_FORMAT] }
         ?: RatioFormat.PARTS,
+    totalAmount = (this[KEY_TOTAL_AMOUNT] ?: SettingsRepository.DEFAULT_TOTAL_AMOUNT)
+        .coerceIn(AppSettings.MIN_TOTAL_AMOUNT, AppSettings.MAX_TOTAL_AMOUNT),
     themeMode = ThemeMode.entries.firstOrNull { it.name == this[KEY_THEME_MODE] }
         ?: ThemeMode.SYSTEM,
     recentColors = parseRecentColors(this[KEY_RECENT_COLORS]),

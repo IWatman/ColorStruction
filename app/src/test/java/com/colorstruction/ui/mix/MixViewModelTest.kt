@@ -6,6 +6,7 @@ import com.colorstruction.data.AppSettings
 import com.colorstruction.data.Paint
 import com.colorstruction.data.Palette
 import com.colorstruction.data.RatioFormat
+import com.colorstruction.mixing.Amounts
 import com.colorstruction.mixing.PaletteType
 import com.colorstruction.ui.paints.FakeFavoriteRepository
 import com.colorstruction.ui.paints.FakePaintRepository
@@ -63,12 +64,14 @@ class MixViewModelTest {
         repository: FakePaintRepository,
         settings: FakeSettingsStore = FakeSettingsStore(AppSettings(activePaletteId = 1L)),
         favorites: FakeFavoriteRepository = FakeFavoriteRepository(),
+        amountLabel: (Double) -> String = { Amounts.formatAmount(it) },
     ): MixViewModel = MixViewModel(
         savedStateHandle = SavedStateHandle(),
         paintRepository = repository,
         settings = settings,
         favoriteRepository = favorites,
         solverDispatcher = dispatcher,
+        amountLabel = amountLabel,
     )
 
     /** Collects the state in the background, the way the screen does. */
@@ -204,6 +207,50 @@ class MixViewModelTest {
         viewModel.saveFavorite(recipe)
         advanceUntilIdle()
         assertEquals(1, favorites.favorites().first().size)
+    }
+
+    @Test
+    fun amountModeLabelsSumToTheTotal() = runTest(dispatcher) {
+        val settings = FakeSettingsStore(AppSettings(activePaletteId = 1L, totalAmount = 50))
+        val viewModel = observe(
+            createViewModel(filledRepository(), settings, amountLabel = { Amounts.formatAmount(it) + " ml" }),
+        )
+        viewModel.setTarget(oliveTarget)
+        advanceUntilIdle()
+
+        viewModel.setRatioFormat(RatioFormat.AMOUNT)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(RatioFormat.AMOUNT, state.ratioFormat)
+        assertEquals(50, state.totalAmount)
+        val recipe = state.recipes.first()
+        assertEquals(recipe.recipe.components.size, recipe.componentLabels.size)
+        assertTrue(recipe.componentLabels.all { it.endsWith(" ml") })
+        val sum = recipe.componentLabels.sumOf { it.removeSuffix(" ml").toDouble() }
+        assertEquals(state.totalAmount.toDouble(), sum, 1e-9)
+        recipe.componentLabels.forEach { label ->
+            // 50 ml is measured in ½ ml steps.
+            assertEquals(0.0, (label.removeSuffix(" ml").toDouble() * 2.0) % 1.0, 1e-9)
+        }
+    }
+
+    @Test
+    fun setTotalAmountClampsToTheAllowedRange() = runTest(dispatcher) {
+        val settings = FakeSettingsStore(AppSettings(activePaletteId = 1L))
+        val viewModel = observe(createViewModel(filledRepository(), settings))
+
+        viewModel.setTotalAmount(250)
+        advanceUntilIdle()
+        assertEquals(250, viewModel.uiState.value.totalAmount)
+
+        viewModel.setTotalAmount(0)
+        advanceUntilIdle()
+        assertEquals(AppSettings.MIN_TOTAL_AMOUNT, viewModel.uiState.value.totalAmount)
+
+        viewModel.setTotalAmount(99_999)
+        advanceUntilIdle()
+        assertEquals(AppSettings.MAX_TOTAL_AMOUNT, viewModel.uiState.value.totalAmount)
     }
 
     private fun RecipeUi.singlePaintName(): String? =

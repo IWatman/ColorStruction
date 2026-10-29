@@ -93,8 +93,10 @@ fun MixScreen(
             MixControls(
                 ratioFormat = uiState.ratioFormat,
                 maxComponents = uiState.maxComponents,
+                totalAmount = uiState.totalAmount,
                 onRatioFormatChange = viewModel::setRatioFormat,
                 onMaxComponentsChange = viewModel::setMaxComponents,
+                onTotalAmountChange = viewModel::setTotalAmount,
             )
         }
         item { RecipesHeader(uiState.palette?.name) }
@@ -109,6 +111,7 @@ fun MixScreen(
                 recipe = recipe,
                 target = target,
                 ratioFormat = uiState.ratioFormat,
+                totalAmount = uiState.totalAmount,
                 isSaved = recipe.favoriteKey in uiState.savedRecipeKeys,
                 onSave = { viewModel.saveFavorite(recipe) },
             )

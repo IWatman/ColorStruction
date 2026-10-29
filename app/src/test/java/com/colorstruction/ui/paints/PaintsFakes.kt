@@ -158,6 +158,15 @@ internal class FakeFavoriteRepository(initial: List<FavoriteRecipe> = emptyList(
         state.value = state.value.copy(ratioFormat = format)
     }
 
+    override suspend fun setTotalAmount(value: Int) {
+        state.value = state.value.copy(
+            totalAmount = value.coerceIn(
+                AppSettings.MIN_TOTAL_AMOUNT,
+                AppSettings.MAX_TOTAL_AMOUNT,
+            ),
+        )
+    }
+
     override suspend fun setThemeMode(mode: ThemeMode) {
         state.value = state.value.copy(themeMode = mode)
     }

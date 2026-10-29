@@ -33,9 +33,7 @@ import com.colorstruction.R
 import com.colorstruction.color.Rgb
 import com.colorstruction.data.RatioFormat
 import com.colorstruction.mixing.Accuracy
-import com.colorstruction.mixing.Proportions
 import com.colorstruction.mixing.RecipeComponent
-import kotlin.math.roundToInt
 
 /** Colour of the virtual water component: a light blue-gray. */
 private val WaterColor = Color(0xFFAFC3CE)
@@ -48,7 +46,8 @@ private val SwatchShape = RoundedCornerShape(6.dp)
  *
  * @param recipe the recipe together with the rounded shares that are displayed.
  * @param target the color the recipe was solved for, shown next to the result.
- * @param ratioFormat how the per-component share is rendered (parts or percent).
+ * @param ratioFormat how the per-component share is rendered (parts, percent or amount).
+ * @param totalAmount total volume of the recipe in millilitres, shown in the amount mode.
  * @param isSaved whether this exact recipe is already stored as a favorite.
  * @param onSave invoked when the star is tapped on a recipe that is not saved yet.
  */
@@ -57,6 +56,7 @@ fun RecipeCard(
     recipe: RecipeUi,
     target: Rgb,
     ratioFormat: RatioFormat,
+    totalAmount: Int,
     isSaved: Boolean,
     onSave: () -> Unit,
     modifier: Modifier = Modifier,
@@ -65,9 +65,24 @@ fun RecipeCard(
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Header(recipe, target, isSaved, onSave)
             recipe.recipe.components.forEachIndexed { index, component ->
-                ComponentRow(component, recipe.displayWeights.getOrElse(index) { 0.0 }, ratioFormat)
+                val label = recipe.componentLabels.getOrElse(index) { "" }
+                // Amount labels arrive as bare numbers; the unit is localized here, at render
+                // time, so it follows a language change immediately.
+                val shown = if (ratioFormat == RatioFormat.AMOUNT && label.isNotEmpty()) {
+                    stringResource(R.string.amount_label, label)
+                } else {
+                    label
+                }
+                ComponentRow(component, shown)
             }
             ProportionBar(recipe)
+            if (ratioFormat == RatioFormat.AMOUNT) {
+                Text(
+                    text = stringResource(R.string.total_amount_line, totalAmount.toString()),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }
@@ -134,7 +149,7 @@ private fun AccuracyBadge(accuracy: Accuracy) {
 
 /** Swatch, name and share of one component. */
 @Composable
-private fun ComponentRow(component: RecipeComponent, weight: Double, ratioFormat: RatioFormat) {
+private fun ComponentRow(component: RecipeComponent, label: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
             Modifier
@@ -150,7 +165,7 @@ private fun ComponentRow(component: RecipeComponent, weight: Double, ratioFormat
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
         )
-        Text(proportionText(weight, ratioFormat), style = MaterialTheme.typography.bodyMedium)
+        Text(label, style = MaterialTheme.typography.bodyMedium)
     }
 }
 
@@ -170,7 +185,3 @@ private fun ProportionBar(recipe: RecipeUi) {
 /** Colour of a component: the paint's own color or the water stand-in. */
 private fun swatchColor(component: RecipeComponent): Color =
     component.paint?.let { Color(it.color.toArgbInt()) } ?: WaterColor
-
-/** Per-component share text: `1½` for parts, `35%` for percents. */
-private fun proportionText(weight: Double, ratioFormat: RatioFormat): String =
-    if (ratioFormat == RatioFormat.PERCENT) "${weight.roundToInt()}%" else Proportions.formatPart(weight)

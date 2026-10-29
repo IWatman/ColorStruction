@@ -87,6 +87,10 @@
     <string name="accuracy_not_possible">Не смешать</string>
     <string name="parts">Части</string>
     <string name="percent">%</string>
+    <string name="amount_unit_ml">мл</string>
+    <string name="total_amount">Всего, мл</string>
+    <string name="total_amount_line">Всего %1$s мл</string>
+    <string name="amount_label">%1$s мл</string>
     <string name="max_paints">Макс. красок</string>
     <string name="initial_color">Исходный цвет</string>
     <string name="solving">Подбираю…</string>

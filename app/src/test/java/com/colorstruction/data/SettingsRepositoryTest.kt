@@ -77,6 +77,21 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun clampsTotalAmountToSupportedRange() = runTest {
+        repository.setTotalAmount(0)
+        assertEquals(1, repository.settings.first().totalAmount)
+
+        repository.setTotalAmount(-20)
+        assertEquals(1, repository.settings.first().totalAmount)
+
+        repository.setTotalAmount(99_999)
+        assertEquals(5000, repository.settings.first().totalAmount)
+
+        repository.setTotalAmount(250)
+        assertEquals(250, repository.settings.first().totalAmount)
+    }
+
+    @Test
     fun storesRatioFormat() = runTest {
         repository.setRatioFormat(RatioFormat.PERCENT)
         assertEquals(RatioFormat.PERCENT, repository.settings.first().ratioFormat)
