@@ -13,6 +13,7 @@ import com.colorstruction.R
 import com.colorstruction.color.Rgb
 import com.colorstruction.data.*
 import com.colorstruction.mixing.Amounts
+import com.colorstruction.mixing.MixCorrection
 import com.colorstruction.mixing.RecipeSolver
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -22,6 +23,9 @@ private const val DEFAULT_TARGET_ARGB: Int = 0xFF3D933E.toInt()
 
 /** Key under which the target color is stored in the [SavedStateHandle]. */
 private const val KEY_TARGET_ARGB = "mix_target_argb"
+
+/** Key under which the measured batch color of the "fix a mix" sheet is stored. */
+private const val KEY_CORRECTION_ARGB = "mix_correction_argb"
 
 /**
  * Holds the mix screen state: the target color and the recipes for the active palette.
@@ -128,6 +132,45 @@ class MixViewModel(
             }
             emit(request.toState(isSolving = false, recipes))
         }.flowOn(solverDispatcher)
+    }
+
+    private val _correctionMix = MutableStateFlow(
+        savedStateHandle.get<Int>(KEY_CORRECTION_ARGB)?.let(Rgb::fromArgbInt),
+    )
+
+    /** Suggestions for fixing the measured batch, re-searched when the target or palette changes. */
+    val correction: StateFlow<CorrectionUiState> = combine(
+        _target,
+        _correctionMix,
+        activePalette,
+    ) { target, mix, palettePaints -> Triple(target, mix, palettePaints) }
+        .flatMapLatest { (target, mix, palettePaints) ->
+            val palette = palettePaints.palette
+            if (mix == null || palette == null) {
+                flowOf(CorrectionUiState(mix))
+            } else {
+                flow {
+                    emit(CorrectionUiState(mix, isComputing = true))
+                    val outcome = MixCorrection.correct(
+                        current = mix,
+                        target = target,
+                        paints = palettePaints.paints.map { it.toSolverPaint() },
+                        paletteType = palette.type,
+                    )
+                    emit(CorrectionUiState(mix, outcome = outcome))
+                }.flowOn(solverDispatcher)
+            }
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
+            CorrectionUiState(_correctionMix.value),
+        )
+
+    /** Sets the measured color of the existing batch for the "fix a mix" sheet. */
+    fun setCorrectionMix(rgb: Rgb) {
+        savedStateHandle[KEY_CORRECTION_ARGB] = rgb.toArgbInt()
+        _correctionMix.value = rgb
     }
 
     /** Recently used target colors, most recent first. */

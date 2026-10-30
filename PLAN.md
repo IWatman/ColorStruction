@@ -198,6 +198,8 @@ Each stage ends with a build (`./gradlew assembleDebug`) and a test run.
 - [x] Share a recipe as an image (v1.3.0)
 - [x] Comparison with RGB mixing (learning mode) (v1.3.0)
 - [x] Volume-based amounts: "how many ml of each for 50 ml" (v1.3.0)
+- [x] Fix a mix: what to add to an existing batch to reach the target (v1.4.0)
+- [x] White balance for the eyedropper: pick white paper on the photo (v1.4.0)
 - [ ] More languages — on request
 
 ## Code structure

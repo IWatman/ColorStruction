@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -36,6 +37,7 @@ private const val LOUPE_MAGNIFICATION = 6f
  * @param bitmap image to pick from (already downsampled)
  * @param state current viewport and crosshair, in image pixels
  * @param onStateChange invoked whenever a gesture changes [state]
+ * @param colorFilter optional white balance preview applied to the image and the loupe
  */
 @Composable
 fun EyedropperView(
@@ -43,6 +45,7 @@ fun EyedropperView(
     state: EyedropperState,
     onStateChange: (EyedropperState) -> Unit,
     modifier: Modifier = Modifier,
+    colorFilter: ColorFilter? = null,
 ) {
     val image = remember(bitmap) { bitmap.asImageBitmap() }
     val imageSize = remember(bitmap) { SizePx(bitmap.width.toFloat(), bitmap.height.toFloat()) }
@@ -90,7 +93,7 @@ fun EyedropperView(
         if (shown.width <= 0f || shown.height <= 0f) return@Canvas
 
         val placement = state.imageTopLeft(container, imageSize)
-        drawFittedImage(image, placement, shown)
+        drawFittedImage(image, placement, shown, colorFilter = colorFilter)
 
         val crosshair = state.imageToScreen(container, imageSize, state.crosshairX, state.crosshairY)
         val crosshairOffset = Offset(crosshair.x, crosshair.y)
@@ -108,6 +111,7 @@ fun EyedropperView(
                 magnification = LOUPE_MAGNIFICATION,
                 background = loupeBackground,
                 markerSize = markerSize,
+                colorFilter = colorFilter,
             )
         }
     }

@@ -119,6 +119,23 @@ class UpdateManagerInstallTest {
     }
 
     @Test
+    fun `signature conflict becomes a signature mismatch error`() = runTest {
+        val manager = build()
+        install(manager)
+
+        manager.onInstallResult(
+            InstallResult.Failed(
+                "INSTALL_FAILED_UPDATE_INCOMPATIBLE: Existing package com.colorstruction " +
+                    "signatures do not match newer version; ignoring!",
+            ),
+        )
+
+        val state = manager.state.value as UpdateState.Failed
+        assertEquals(UpdateError.SignatureMismatch, state.reason)
+        assertEquals(FAKE_RELEASE, state.release)
+    }
+
+    @Test
     fun `resume with a dead session falls back to available`() = runTest {
         installer.sessionActive = false
         val manager = build()

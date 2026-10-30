@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +37,10 @@ fun EyedropperScreen(
     val image = rememberEyedropperImage(imageUri)
     var viewport by remember(imageUri) { mutableStateOf(EyedropperState()) }
     var sizeIndex by remember(imageUri) { mutableIntStateOf(0) }
+    // Color of white paper picked on this photo; every sample is balanced against it.
+    var whiteArgb by rememberSaveable(imageUri) { mutableStateOf<Int?>(null) }
+    val gains = remember(whiteArgb) { whiteArgb?.let(::whiteBalanceGains) }
+    val previewFilter = remember(gains) { gains?.let(::whiteBalanceFilter) }
 
     // Start sampling from the middle of the image as soon as it is decoded.
     LaunchedEffect(image.pixels) {
@@ -45,7 +50,8 @@ fun EyedropperScreen(
     }
 
     val radius = SAMPLE_RADII[sizeIndex.coerceIn(SAMPLE_RADII.indices)]
-    val sampled = remember(image.pixels, viewport.crosshairX, viewport.crosshairY, radius) {
+    // The raw sample is what "this is white" stores; the balanced one is what gets picked.
+    val raw = remember(image.pixels, viewport.crosshairX, viewport.crosshairY, radius) {
         image.pixels?.let {
             averageColor(
                 pixels = it.pixels,
@@ -54,6 +60,22 @@ fun EyedropperScreen(
                 cx = viewport.crosshairX.roundToInt(),
                 cy = viewport.crosshairY.roundToInt(),
                 radius = radius,
+            )
+        }
+    }
+    val sampled = remember(raw, gains) {
+        val pixels = image.pixels
+        if (gains == null || pixels == null) {
+            raw
+        } else {
+            averageColor(
+                pixels = pixels.pixels,
+                width = pixels.width,
+                height = pixels.height,
+                cx = viewport.crosshairX.roundToInt(),
+                cy = viewport.crosshairY.roundToInt(),
+                radius = radius,
+                gains = gains,
             )
         }
     }
@@ -74,6 +96,10 @@ fun EyedropperScreen(
                     argb = sampled,
                     selectedIndex = sizeIndex,
                     onSelectSampleSize = { sizeIndex = it },
+                    whiteBalanceOn = gains != null,
+                    canSetWhite = raw != null && whiteBalanceGains(raw) != null,
+                    onSetWhite = { whiteArgb = raw },
+                    onResetWhite = { whiteArgb = null },
                 )
             }
         },
@@ -93,6 +119,7 @@ fun EyedropperScreen(
                     state = viewport,
                     onStateChange = { viewport = it },
                     modifier = Modifier.fillMaxSize(),
+                    colorFilter = previewFilter,
                 )
             }
         }

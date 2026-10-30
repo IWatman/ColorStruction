@@ -166,7 +166,7 @@ class UpdateManager(
                 installingSince = null
                 confirmationShown = false
                 _state.value = UpdateState.Failed(
-                    UpdateError.Install(result.message),
+                    UpdateError.fromInstallFailure(result.message),
                     _state.value.currentRelease,
                 )
             }

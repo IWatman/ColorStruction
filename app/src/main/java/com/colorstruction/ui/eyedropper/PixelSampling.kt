@@ -9,6 +9,9 @@ val SAMPLE_RADII: List<Int> = listOf(0, 1, 2)
 
 private const val OPAQUE_BLACK: Int = -0x1000000
 
+/** Darkest linear channel value still accepted as a white reference. */
+private const val MIN_WHITE_CHANNEL: Double = 0.05
+
 /** sRGB byte value → linear light, precomputed once. */
 private val LINEAR_CHANNEL: DoubleArray =
     DoubleArray(256) { srgbToLinearChannel(it / 255.0) }
@@ -22,8 +25,17 @@ private val LINEAR_CHANNEL: DoubleArray =
  * value.
  *
  * @param pixels ARGB pixels in row-major order, at least `width * height` long
+ * @param gains optional white balance gains from [whiteBalanceGains], applied in linear light
  */
-fun averageColor(pixels: IntArray, width: Int, height: Int, cx: Int, cy: Int, radius: Int): Int {
+fun averageColor(
+    pixels: IntArray,
+    width: Int,
+    height: Int,
+    cx: Int,
+    cy: Int,
+    radius: Int,
+    gains: DoubleArray? = null,
+): Int {
     require(width > 0 && height > 0) { "Image must not be empty" }
     require(pixels.size >= width * height) { "Pixel buffer is smaller than the image" }
 
@@ -50,7 +62,28 @@ fun averageColor(pixels: IntArray, width: Int, height: Int, cx: Int, cy: Int, ra
     if (count == 0) return OPAQUE_BLACK
 
     val n = count.toDouble()
-    return pack(sumR / n, sumG / n, sumB / n)
+    return if (gains == null) {
+        pack(sumR / n, sumG / n, sumB / n)
+    } else {
+        pack(sumR / n * gains[0], sumG / n * gains[1], sumB / n * gains[2])
+    }
+}
+
+/**
+ * White balance gains that turn [whiteArgb], the color of white paper on the photo, into pure
+ * white: one multiplier per channel in linear light (von Kries scaling). This also corrects
+ * the exposure, which is what the paint model expects: its white is the bare substrate.
+ *
+ * @return `[r, g, b]` gains, or `null` when a channel is too dark to be a usable white.
+ */
+fun whiteBalanceGains(whiteArgb: Int): DoubleArray? {
+    val channels = doubleArrayOf(
+        LINEAR_CHANNEL[(whiteArgb shr 16) and 0xFF],
+        LINEAR_CHANNEL[(whiteArgb shr 8) and 0xFF],
+        LINEAR_CHANNEL[whiteArgb and 0xFF],
+    )
+    if (channels.any { it < MIN_WHITE_CHANNEL }) return null
+    return DoubleArray(3) { 1.0 / channels[it] }
 }
 
 /** Packs linear-light channels into an opaque ARGB value. */

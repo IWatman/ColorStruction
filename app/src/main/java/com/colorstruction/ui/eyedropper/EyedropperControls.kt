@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -35,6 +37,10 @@ private val SAMPLE_LABELS = listOf(R.string.sample_1px, R.string.sample_3, R.str
  *
  * @param argb currently sampled (opaque) color
  * @param selectedIndex index into the 1 px / 3×3 / 5×5 choices
+ * @param whiteBalanceOn whether a white reference is set for this photo
+ * @param canSetWhite whether the spot under the crosshair is light enough to be the white
+ * @param onSetWhite stores the spot under the crosshair as the white reference
+ * @param onResetWhite drops the white reference
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +48,10 @@ fun EyedropperBottomBar(
     argb: Int,
     selectedIndex: Int,
     onSelectSampleSize: (Int) -> Unit,
+    whiteBalanceOn: Boolean,
+    canSetWhite: Boolean,
+    onSetWhite: () -> Unit,
+    onResetWhite: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(modifier = modifier.fillMaxWidth(), tonalElevation = 3.dp) {
@@ -85,6 +95,39 @@ fun EyedropperBottomBar(
                         Text(text = stringResource(label), textAlign = TextAlign.Center)
                     }
                 }
+            }
+            WhiteBalanceRow(whiteBalanceOn, canSetWhite, onSetWhite, onResetWhite)
+        }
+    }
+}
+
+/** White balance status with the "this is white" / reset action and a short hint. */
+@Composable
+private fun WhiteBalanceRow(
+    whiteBalanceOn: Boolean,
+    canSetWhite: Boolean,
+    onSetWhite: () -> Unit,
+    onResetWhite: () -> Unit,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.white_balance),
+                style = MaterialTheme.typography.labelMedium,
+            )
+            Text(
+                text = stringResource(
+                    if (whiteBalanceOn) R.string.white_balance_on else R.string.white_balance_hint,
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (whiteBalanceOn) {
+            TextButton(onClick = onResetWhite) { Text(stringResource(R.string.white_balance_reset)) }
+        } else {
+            OutlinedButton(onClick = onSetWhite, enabled = canSetWhite) {
+                Text(stringResource(R.string.white_balance_set))
             }
         }
     }

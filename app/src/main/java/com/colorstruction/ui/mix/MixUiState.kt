@@ -74,17 +74,19 @@ fun recipeUi(
     val weights = recipe.components.map { it.weight }
     // Rounding to parts can cost accuracy, so prefer the simplest rounding that stays within
     // half a ΔE of the unrounded recipe and fall back to the most accurate candidate.
+    val parts = Proportions
+        .partsCandidates(weights)
+        .take(Proportions.MAX_CANDIDATES)
+        .let { candidates ->
+            Proportions.chooseParts(candidates, recipe.deltaE) { candidate ->
+                solver.evaluate(target, recipe, candidate).deltaE
+            }
+        } ?: Proportions.toParts(weights)
+    // Every format shows the same recipe: amounts and percents are those parts re-expressed,
+    // so switching the format never changes what the user is told to mix.
     val displayWeights: List<Double> = when (ratioFormat) {
-        // Amounts are the same accuracy-aware parts, only rendered as volumes.
-        RatioFormat.PARTS, RatioFormat.AMOUNT -> Proportions
-            .partsCandidates(weights)
-            .take(Proportions.MAX_CANDIDATES)
-            .let { candidates ->
-                Proportions.chooseParts(candidates, recipe.deltaE) { parts ->
-                    solver.evaluate(target, recipe, parts).deltaE
-                }
-            } ?: Proportions.toParts(weights)
-        RatioFormat.PERCENT -> Proportions.toPercents(weights).map { it.toDouble() }
+        RatioFormat.PARTS, RatioFormat.AMOUNT -> parts
+        RatioFormat.PERCENT -> Proportions.toPercents(parts).map { it.toDouble() }
     }
     val proportionsText = when (ratioFormat) {
         RatioFormat.PARTS, RatioFormat.AMOUNT -> Proportions.formatParts(displayWeights)

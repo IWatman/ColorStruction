@@ -80,5 +80,6 @@ private fun failureMessage(reason: UpdateError): String = when (reason) {
     is UpdateError.RateLimited -> stringResource(R.string.error_rate_limited)
     UpdateError.NoApkAsset -> stringResource(R.string.error_no_apk)
     UpdateError.NoRelease -> stringResource(R.string.error_no_release)
+    UpdateError.SignatureMismatch -> stringResource(R.string.error_signature_mismatch)
     else -> stringResource(R.string.error_generic, reason.message ?: "")
 }

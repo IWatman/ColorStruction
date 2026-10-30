@@ -96,4 +96,36 @@ class PixelSamplingTest {
         val arithmetic = (0x40 + 0xC0) / 2
         assertTrue("linear average should be brighter than $arithmetic", red8(mixed) > arithmetic)
     }
+
+    @Test
+    fun whiteBalanceTurnsThePaperIntoPureWhite() {
+        val paper = 0xFFD8C8A8.toInt() // warm, slightly dark paper under lamp light
+        val gains = requireNotNull(whiteBalanceGains(paper))
+        val balanced = averageColor(intArrayOf(paper), 1, 1, 0, 0, 0, gains)
+        assertArgbbClose(white, balanced)
+    }
+
+    @Test
+    fun whiteBalanceRemovesTheColorCastFromAGray() {
+        // A neutral gray photographed under the same warm light gets the same cast as the paper.
+        val paper = 0xFFE0D0B0.toInt()
+        val gains = requireNotNull(whiteBalanceGains(paper))
+        val castGray = 0xFF706858.toInt()
+        val balanced = averageColor(intArrayOf(castGray), 1, 1, 0, 0, 0, gains)
+        val spread = maxOf(red8(balanced), green8(balanced), blue8(balanced)) -
+            minOf(red8(balanced), green8(balanced), blue8(balanced))
+        assertTrue("balanced gray should be neutral, spread $spread", spread <= 4)
+    }
+
+    @Test
+    fun tooDarkSpotIsNotAcceptedAsWhite() {
+        assertEquals(null, whiteBalanceGains(0xFF202020.toInt()))
+        assertEquals(null, whiteBalanceGains(0xFFFFFF10.toInt()))
+    }
+
+    @Test
+    fun noGainsKeepsTheOldBehaviour() {
+        val pixel = 0xFF336699.toInt()
+        assertEquals(averageColor(intArrayOf(pixel), 1, 1, 0, 0, 0), averageColor(intArrayOf(pixel), 1, 1, 0, 0, 0, null))
+    }
 }

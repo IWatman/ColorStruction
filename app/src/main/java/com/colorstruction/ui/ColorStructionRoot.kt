@@ -36,6 +36,7 @@ import com.colorstruction.R
 import com.colorstruction.color.Rgb
 import com.colorstruction.ui.eyedropper.EyedropperScreen
 import com.colorstruction.ui.favorites.FavoritesScreen
+import com.colorstruction.ui.mix.CORRECTION_COLOR_KEY
 import com.colorstruction.ui.mix.MixScreen
 import com.colorstruction.ui.mix.PICKED_COLOR_KEY
 import com.colorstruction.ui.paints.CALIBRATION_COLOR_KEY
@@ -160,6 +161,12 @@ fun ColorStructionRoot() {
                         navController.navigate("$PICKER_ROUTE?$PICKER_COLOR_ARG=${rgb.toArgbInt()}")
                     },
                     onPickFromImage = openEyedropper,
+                    onPickCorrectionColor = { rgb ->
+                        navController.navigate(pickerRoute(rgb.toArgbInt(), CORRECTION_COLOR_KEY))
+                    },
+                    onPickCorrectionFromImage = { uri ->
+                        navController.navigate(eyedropperRoute(uri, CORRECTION_COLOR_KEY))
+                    },
                     savedStateHandle = entry.savedStateHandle,
                 )
             }

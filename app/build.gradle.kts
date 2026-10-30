@@ -2,7 +2,7 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 // Version comes from one place; `-PappVersion=0.0.9` overrides it (used to test updates).
-val appVersion: String = (findProperty("appVersion") as String?) ?: "1.3.0"
+val appVersion: String = (findProperty("appVersion") as String?) ?: "1.4.0"
 
 /** 0.1.0 -> 100, 1.2.3 -> 10203: newer versions always get a larger versionCode. */
 fun versionCodeOf(version: String): Int {

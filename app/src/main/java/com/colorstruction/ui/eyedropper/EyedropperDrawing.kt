@@ -4,6 +4,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
@@ -13,7 +15,20 @@ import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import kotlin.math.pow
 import kotlin.math.roundToInt
+
+/** Exponent of the sRGB curve, close enough for previewing a white balance. */
+private const val PREVIEW_GAMMA = 2.2
+
+/**
+ * Preview filter for white balance [gains] (linear light). The color matrix works on encoded
+ * sRGB values, where a linear gain `g` is approximately a scale of `g^(1/2.2)`.
+ */
+fun whiteBalanceFilter(gains: DoubleArray): ColorFilter {
+    val (r, g, b) = gains.map { it.pow(1.0 / PREVIEW_GAMMA).toFloat() }
+    return ColorFilter.colorMatrix(ColorMatrix().apply { setToScale(r, g, b, 1f) })
+}
 
 /** Draws [image] at [placement] with [shown] size using the given [filterQuality]. */
 fun DrawScope.drawFittedImage(
@@ -21,6 +36,7 @@ fun DrawScope.drawFittedImage(
     placement: PointPx,
     shown: SizePx,
     filterQuality: FilterQuality = FilterQuality.Low,
+    colorFilter: ColorFilter? = null,
 ) {
     val dstWidth = shown.width.roundToInt().coerceAtLeast(1)
     val dstHeight = shown.height.roundToInt().coerceAtLeast(1)
@@ -31,6 +47,7 @@ fun DrawScope.drawFittedImage(
         dstOffset = IntOffset(placement.x.roundToInt(), placement.y.roundToInt()),
         dstSize = IntSize(dstWidth, dstHeight),
         filterQuality = filterQuality,
+        colorFilter = colorFilter,
     )
 }
 
@@ -68,6 +85,7 @@ fun DrawScope.drawLoupe(
     magnification: Float,
     background: Color,
     markerSize: Float,
+    colorFilter: ColorFilter? = null,
     dark: Color = Color.Black,
     light: Color = Color.White,
 ) {
@@ -84,7 +102,7 @@ fun DrawScope.drawLoupe(
             scale(magnification, magnification, pivot = Offset.Zero)
             translate(-crosshair.x, -crosshair.y)
         }) {
-            drawFittedImage(image, placement, shown, FilterQuality.None)
+            drawFittedImage(image, placement, shown, FilterQuality.None, colorFilter)
         }
     }
     val half = markerSize / 2f
