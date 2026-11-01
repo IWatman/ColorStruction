@@ -75,6 +75,29 @@ paint gives green, because pigments *subtract* light. ColorStruction mixes subtr
 Later versions install from inside the app: **Settings → Check for updates**. Every release
 is signed with the same key, so updates install over the existing app and keep your palettes.
 
+## Permissions and privacy
+
+ColorStruction does not request camera or storage runtime permissions. It uses system
+components to access the camera and files, so it only sees what the user explicitly picks or
+shoots.
+
+- **Camera.** The eyedropper opens the system camera app with
+  `ActivityResultContracts.TakePicture()`. The app does not access the camera directly and
+  does not declare `CAMERA`. The shot is written to the app's cache and passed to the camera
+  app through a temporary `FileProvider` URI.
+- **Gallery.** Images are chosen with the system photo picker
+  (`ActivityResultContracts.PickVisualMedia()`), which grants read access to that one image
+  only. No storage permission is requested.
+- **Storage.** Palettes, paints, favorites and settings live in the app's private sandbox
+  (Room/DataStore). Palette import and export use the Storage Access Framework
+  (`OpenDocument` / `CreateDocument`), so the user grants access to one chosen file. Shared
+  images and palette files are handed out through `FileProvider` from the cache.
+- **Network and updates.** The manifest declares only two permissions: `INTERNET` for the
+  GitHub release check, and `REQUEST_INSTALL_PACKAGES` for installing an update. `INTERNET`
+  is a normal permission granted at install; `REQUEST_INSTALL_PACKAGES` is a special app
+  access the user confirms in the system "install unknown apps" dialog when updating, not a
+  runtime prompt on first launch.
+
 ## Build from source
 
 Requirements: JDK 17+ and the Android SDK (platform 35).
